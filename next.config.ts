@@ -4,6 +4,7 @@ const mediaCdnUrl =
   process.env.NEXT_PUBLIC_MEDIA_CDN_URL || process.env.MEDIA_CDN_URL;
 
 const nextConfig: NextConfig = {
+  output: "standalone",
   experimental: {
     serverActions: {
       bodySizeLimit: "1gb",

@@ -341,8 +341,7 @@ async function getHomepageData() {
           name: true,
           slug: true,
         },
-        take: 10,
-        where: { isActive: true, showOnHomepage: true },
+        where: { isActive: true },
       }),
       prisma.vehicle.findMany({
         include: {
@@ -430,11 +429,9 @@ export default async function Home() {
       ? specialVehicles
       : vehicles.slice(2, 8);
   const categoryById = new Map(categories.map((category) => [category.id, category]));
-  const browseCategories = homepageSettings.categoryOrder.length
-    ? homepageSettings.categoryOrder
-        .map((id) => categoryById.get(id))
-        .filter((category): category is HomeCategory => Boolean(category))
-    : categories.slice(0, 5);
+  const browseCategories = homepageSettings.categoryOrder
+    .map((id) => categoryById.get(id))
+    .filter((category): category is HomeCategory => Boolean(category));
   const heroVehicle = heroVehicles[0]?.vehicle ?? fallbackVehicles[0];
   const spotlightVehicle =
     (homepageSettings.spotlightVehicleId
@@ -443,6 +440,7 @@ export default async function Home() {
     heroVehicle ||
     fallbackVehicles[0];
   const showcaseImage = vehicleImage(spotlightVehicle);
+  const spotlightVehicleHref = `/vehicles/${spotlightVehicle.slug}`;
   const heroSlides: HeroCarouselVehicle[] = heroVehicles.map(({ imagePath, vehicle }) => {
     const image = imagePath || vehicleImage(vehicle);
 
@@ -490,15 +488,16 @@ export default async function Home() {
 
             return (
               <Link
-                className={`group relative min-h-64 overflow-hidden rounded-md bg-[#f4f4f1] shadow-sm transition duration-300 hover:-translate-y-1 hover:shadow-2xl hover:shadow-[#1b1b1b]/15 ${cardClass}`}
+                className={`group relative h-[350px] overflow-hidden rounded-md bg-[#f4f4f1] shadow-sm transition duration-300 hover:-translate-y-1 hover:shadow-2xl hover:shadow-[#1b1b1b]/15 ${cardClass}`}
                 href="#inventory"
                 key={category.id}
                 title={category.description || category.name}
               >
                 <Image
                   alt={category.name}
-                  className="object-cover transition duration-500 group-hover:scale-105"
+                  className="object-cover object-center transition duration-500 group-hover:scale-105"
                   fill
+                  quality={90}
                   sizes={
                     index < 2
                       ? "(max-width: 768px) 100vw, 50vw"
@@ -528,50 +527,84 @@ export default async function Home() {
       </Section>
 
       <section className="px-4 py-12 sm:px-8">
-        <div className="mx-auto grid max-w-7xl overflow-hidden rounded-md bg-white shadow-2xl shadow-[#1b1b1b]/10 lg:grid-cols-[0.85fr_1.15fr]">
-          <div className="p-8 md:p-12">
-            <p className="text-sm font-semibold uppercase text-[#1b1b1b]/45">En ligne, au showroom, partout</p>
+        <div className="mx-auto grid max-w-7xl overflow-hidden rounded-md bg-[#111318] text-white shadow-2xl shadow-[#1b1b1b]/15 lg:grid-cols-[0.78fr_1.22fr]">
+          <div className="relative flex flex-col justify-center p-8 md:p-12">
+            <span className="mb-6 inline-flex w-fit items-center gap-2 rounded-full border border-white/15 bg-white/8 px-4 py-2 text-xs font-semibold uppercase tracking-[0.16em] text-[#ffc10a]">
+              <Sparkles className="h-4 w-4" />
+              {vehicleBadge(spotlightVehicle)}
+            </span>
+            <p className="text-sm font-semibold uppercase text-white/48">En ligne, au showroom, partout</p>
             <h2 className="mt-4 max-w-md text-3xl font-semibold leading-tight sm:text-4xl">
               {homepageSettings.spotlightTitle}
             </h2>
-            <p className="mt-5 max-w-lg text-sm leading-7 text-[#1b1b1b]/62">
+            <p className="mt-5 max-w-lg text-sm leading-7 text-white/68">
               {homepageSettings.spotlightDescription}
             </p>
-            <a
-              className="mt-8 inline-flex rounded-full bg-[#1b1b1b] px-6 py-3 text-sm font-semibold text-white transition hover:bg-[#ffc10a] hover:text-[#1b1b1b]"
-              href="#inventory"
+            <div className="mt-6 flex flex-wrap gap-3 text-sm text-white/72">
+              {spotlightVehicle.year ? (
+                <span className="rounded-full border border-white/12 bg-white/7 px-4 py-2">
+                  {spotlightVehicle.year}
+                </span>
+              ) : null}
+              {spotlightVehicle.mileage !== null ? (
+                <span className="rounded-full border border-white/12 bg-white/7 px-4 py-2">
+                  {formatNumber(spotlightVehicle.mileage)} km
+                </span>
+              ) : null}
+              {formatTransmission(spotlightVehicle.transmission) ? (
+                <span className="rounded-full border border-white/12 bg-white/7 px-4 py-2">
+                  {formatTransmission(spotlightVehicle.transmission)}
+                </span>
+              ) : null}
+            </div>
+            <Link
+              className="mt-8 inline-flex w-fit items-center gap-2 rounded-full bg-[#ffc10a] px-6 py-3 text-sm font-semibold text-[#111318] shadow-lg shadow-[#ffc10a]/20 transition hover:-translate-y-0.5 hover:bg-white hover:shadow-xl hover:shadow-white/10"
+              href={spotlightVehicleHref}
             >
-              Découvrir le stock
-            </a>
+              Découvrir
+              <ArrowUpRight className="h-4 w-4" />
+            </Link>
           </div>
-          <div className="relative min-h-72 bg-white">
-            <Image
-              alt={spotlightVehicle.title}
-              className="object-contain object-bottom p-4"
-              fill
-              sizes="(max-width: 1024px) 100vw, 640px"
-              src={showcaseImage ? getMediaUrl(showcaseImage) : "/showroom-hero.png"}
-            />
+          <div className="relative min-h-[320px] bg-[#f3f5f7] lg:min-h-[390px]">
+            <Link className="group absolute inset-0 block" href={spotlightVehicleHref} aria-label={`Découvrir ${spotlightVehicle.title}`}>
+              <Image
+                alt={spotlightVehicle.title}
+                className="object-cover transition duration-500 group-hover:scale-105"
+                fill
+                sizes="(max-width: 1024px) 100vw, 760px"
+                src={showcaseImage ? getMediaUrl(showcaseImage) : "/showroom-hero.png"}
+              />
+              <span className="absolute inset-0 bg-gradient-to-t from-[#111318]/45 via-transparent to-transparent" />
+              <span className="absolute bottom-5 left-5 right-5 flex flex-wrap items-end justify-between gap-3">
+                <span>
+                  <span className="block text-sm font-semibold text-white/75">{spotlightVehicle.brand.name}</span>
+                  <span className="mt-1 block text-xl font-semibold text-white">{spotlightVehicle.title}</span>
+                </span>
+                <span className="rounded-full bg-white px-4 py-2 text-sm font-semibold text-[#111318] shadow-lg shadow-[#111318]/20">
+                  {formatPrice(spotlightVehicle.price, spotlightVehicle.priceCurrency)}
+                </span>
+              </span>
+            </Link>
           </div>
         </div>
       </section>
 
-      <section id="why-us" className="bg-white px-4 py-16 sm:px-8">
-        <div className="mx-auto max-w-7xl">
-          <h2 className="text-center text-2xl font-semibold sm:text-3xl">
+      <section id="why-us" className="bg-[#1b1b1b] px-4 py-20 text-white sm:px-8 lg:py-24">
+        <div className="mx-auto max-w-[1100px]">
+          <h2 className="text-2xl font-semibold leading-tight sm:text-3xl">
             {homepageSettings.whyChooseUsTitle}
           </h2>
-          <div className="mt-10 grid gap-7 md:grid-cols-2 lg:grid-cols-4">
+          <div className="mt-11 grid gap-10 sm:grid-cols-2 lg:grid-cols-4 lg:gap-14">
             {homepageSettings.whyChooseUsItems.map(({ text, title }, index) => {
               const Icon = reasons[index]?.[0] ?? BadgeCheck;
 
               return (
-                <article className="rounded-md border border-[#1b1b1b]/10 bg-white p-6 text-center shadow-sm transition hover:-translate-y-1 hover:shadow-xl hover:shadow-[#1b1b1b]/10 md:text-left" key={title}>
-                  <span className="mx-auto grid h-12 w-12 place-items-center rounded-md bg-[#ffc10a]/18 md:mx-0">
-                    <Icon className="h-6 w-6 text-[#1b1b1b]" />
+                <article className="max-w-[250px]" key={title}>
+                  <span className="grid h-14 w-14 place-items-center">
+                    <Icon className="h-11 w-11 stroke-[1.7] text-[#ffc10a]" />
                   </span>
-                  <h3 className="mt-5 font-semibold">{title}</h3>
-                  <p className="mt-3 text-sm leading-7 text-[#1b1b1b]/60">{text}</p>
+                  <h3 className="mt-5 text-base font-semibold leading-6">{title}</h3>
+                  <p className="mt-4 text-sm leading-7 text-white/82">{text}</p>
                 </article>
               );
             })}
@@ -583,34 +616,50 @@ export default async function Home() {
         <VehicleGrid vehicles={displaySpecials} compact />
       </Section>
 
-      <section id="brands" className="px-4 py-12 sm:px-8">
-        <div className="mx-auto grid max-w-7xl gap-8 rounded-md bg-[#1b1b1b] p-8 text-white md:grid-cols-[0.8fr_1.2fr] md:p-12">
-          <div>
-            <p className="text-sm font-semibold uppercase text-white/45">Marques populaires</p>
-            <h2 className="mt-3 text-3xl font-semibold">Explorer les marques premium</h2>
-            <p className="mt-4 max-w-md text-sm leading-7 text-white/62">
-              Les marques gérées dans le backoffice apparaissent automatiquement ici,
-              pour garder la page publique alignée avec le stock du showroom.
-            </p>
+      <section
+        id="brands"
+        className="mt-8 rounded-t-[48px] bg-[#f7f8fa] px-4 py-16 sm:px-8 lg:py-24"
+      >
+        <div className="mx-auto max-w-7xl">
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+            <h2 className="text-3xl font-semibold leading-tight text-[#050b20] sm:text-4xl">
+              Explorer les marques premium
+            </h2>
+            <Link
+              className="inline-flex w-fit items-center gap-2 text-sm font-semibold text-[#050b20] transition hover:text-[#ffc10a]"
+              href="/marques"
+            >
+              Toutes les marques
+              <ArrowUpRight className="h-4 w-4" />
+            </Link>
           </div>
-          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
-            {brands.slice(0, 9).map((brand) => (
-              <a
-                className="flex min-h-16 items-center justify-center gap-3 rounded-md bg-white px-4 py-3 text-center text-sm font-semibold text-[#1b1b1b] transition hover:bg-[#ffc10a]"
-                href="#inventory"
+
+          <div className="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
+            {brands.slice(0, 6).map((brand) => (
+              <Link
+                className="group flex min-h-[178px] flex-col items-center justify-center rounded-md border border-[#050b20]/10 bg-white px-5 py-7 text-center text-[#050b20] shadow-sm transition duration-300 hover:-translate-y-1 hover:border-[#ffc10a] hover:shadow-xl hover:shadow-[#050b20]/10"
+                href={`/marques/${brand.slug}`}
                 key={brand.id}
               >
-                {brand.logo ? (
-                  <Image
-                    alt=""
-                    className="h-8 w-8 object-contain"
-                    height={32}
-                    src={getMediaUrl(brand.logo)}
-                    width={32}
-                  />
-                ) : null}
-                <span>{brand.name}</span>
-              </a>
+                <span className="flex h-20 w-full items-center justify-center">
+                  {brand.logo ? (
+                    <Image
+                      alt=""
+                      className="max-h-16 w-auto object-contain transition duration-300 group-hover:scale-105"
+                      height={64}
+                      src={getMediaUrl(brand.logo)}
+                      width={112}
+                    />
+                  ) : (
+                    <span className="grid h-16 w-16 place-items-center rounded-full border border-[#050b20]/10 bg-[#f7f8fa] text-xl font-semibold">
+                      {brand.name.slice(0, 2).toUpperCase()}
+                    </span>
+                  )}
+                </span>
+                <span className="mt-5 text-base font-semibold leading-tight">
+                  {brand.name}
+                </span>
+              </Link>
             ))}
           </div>
         </div>

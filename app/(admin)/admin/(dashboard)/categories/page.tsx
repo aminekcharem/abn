@@ -41,7 +41,6 @@ async function getCategories() {
         name: true,
         order: true,
         showOnCategoriesPage: true,
-        showOnHomepage: true,
         slug: true,
         _count: {
           select: { vehicles: true },
@@ -129,16 +128,6 @@ export default async function AdminCategoriesPage() {
                               variant="outline"
                             >
                               {category.isActive ? "Active" : "Inactive"}
-                            </Badge>
-                            <Badge
-                              className={
-                                category.showOnHomepage
-                                  ? "border-emerald-400/40 bg-emerald-400/10 text-emerald-200"
-                                  : "border-zinc-700 bg-zinc-800 text-zinc-400"
-                              }
-                              variant="outline"
-                            >
-                              Home
                             </Badge>
                             <Badge
                               className={
@@ -249,15 +238,6 @@ export default async function AdminCategoriesPage() {
                             type="checkbox"
                           />
                           Active
-                        </label>
-                        <label className="flex items-center gap-3 text-sm font-medium text-zinc-200">
-                          <input
-                            className="h-4 w-4 accent-primary"
-                            defaultChecked={category.showOnHomepage}
-                            name="showOnHomepage"
-                            type="checkbox"
-                          />
-                          Bloc home
                         </label>
                         <label className="flex items-center gap-3 text-sm font-medium text-zinc-200">
                           <input

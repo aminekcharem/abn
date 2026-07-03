@@ -114,15 +114,6 @@ export function CategoryForm({ nextOrder }: { nextOrder: number }) {
           <input
             className="h-4 w-4 accent-primary"
             defaultChecked
-            name="showOnHomepage"
-            type="checkbox"
-          />
-          Afficher dans le bloc home
-        </label>
-        <label className="flex items-center gap-3 text-sm font-medium text-zinc-200">
-          <input
-            className="h-4 w-4 accent-primary"
-            defaultChecked
             name="showOnCategoriesPage"
             type="checkbox"
           />

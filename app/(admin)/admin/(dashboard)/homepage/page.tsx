@@ -29,7 +29,6 @@ async function getHomepageEditorData() {
           isActive: true,
           name: true,
           order: true,
-          showOnHomepage: true,
         },
       }),
       prisma.mediaAsset.findMany({

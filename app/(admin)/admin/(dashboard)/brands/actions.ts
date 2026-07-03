@@ -14,6 +14,16 @@ const brandSchema = z.object({
   slug: z.string().trim().min(2, "Le slug est obligatoire."),
 });
 
+export type BrandActionState = {
+  fieldErrors?: {
+    countryOrigin?: string[];
+    name?: string[];
+    slug?: string[];
+  };
+  message?: string;
+  status?: "error" | "success";
+};
+
 async function ensureAdmin() {
   const session = await auth();
 
@@ -41,6 +51,15 @@ function getUploadFile(formData: FormData, key = "logo") {
   return file instanceof File && file.size > 0 ? file : null;
 }
 
+function isUniqueConstraintError(error: unknown) {
+  return (
+    typeof error === "object" &&
+    error !== null &&
+    "code" in error &&
+    error.code === "P2002"
+  );
+}
+
 async function saveBrandLogo(file: File | null) {
   if (!file) return null;
 
@@ -53,7 +72,10 @@ async function saveBrandLogo(file: File | null) {
   return asset.localPath;
 }
 
-export async function createBrandAction(formData: FormData) {
+export async function createBrandAction(
+  _state: BrandActionState,
+  formData: FormData,
+): Promise<BrandActionState> {
   await ensureAdmin();
 
   const parsed = brandSchema.safeParse({
@@ -66,25 +88,72 @@ export async function createBrandAction(formData: FormData) {
   });
 
   if (!parsed.success) {
-    throw new Error("Marque invalide.");
+    return {
+      fieldErrors: parsed.error.flatten().fieldErrors,
+      message: "Veuillez corriger les champs du formulaire.",
+      status: "error",
+    };
+  }
+
+  const prisma = getPrisma();
+  const slug = slugify(parsed.data.slug);
+  const existingBrand = await prisma.brand.findFirst({
+    select: { name: true, slug: true },
+    where: {
+      OR: [{ slug }, { name: parsed.data.name }],
+    },
+  });
+
+  if (existingBrand) {
+    const field = existingBrand.slug === slug ? "slug" : "name";
+
+    return {
+      fieldErrors: {
+        [field]: [
+          "Cette marque existe deja et ne peut pas etre ajoutee en double.",
+        ],
+      },
+      message: "Cette marque existe deja et ne peut pas etre ajoutee en double.",
+      status: "error",
+    };
   }
 
   const logo = await saveBrandLogo(getUploadFile(formData));
-  const prisma = getPrisma();
 
-  await prisma.brand.create({
-    data: {
-      countryOrigin: parsed.data.countryOrigin || null,
-      isActive: parsed.data.isActive,
-      logo,
-      name: parsed.data.name,
-      slug: slugify(parsed.data.slug),
-    },
-  });
+  try {
+    await prisma.brand.create({
+      data: {
+        countryOrigin: parsed.data.countryOrigin || null,
+        isActive: parsed.data.isActive,
+        logo,
+        name: parsed.data.name,
+        slug,
+      },
+    });
+  } catch (error) {
+    if (isUniqueConstraintError(error)) {
+      return {
+        fieldErrors: {
+          slug: [
+            "Cette marque existe deja et ne peut pas etre ajoutee en double.",
+          ],
+        },
+        message: "Cette marque existe deja et ne peut pas etre ajoutee en double.",
+        status: "error",
+      };
+    }
+
+    throw error;
+  }
 
   revalidatePath("/admin/brands");
   revalidatePath("/admin/vehicles/new");
   revalidatePath("/");
+
+  return {
+    message: "Marque ajoutee avec succes.",
+    status: "success",
+  };
 }
 
 export async function updateBrandLogoAction(formData: FormData) {

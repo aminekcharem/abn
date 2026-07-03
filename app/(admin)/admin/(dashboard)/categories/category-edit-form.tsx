@@ -20,7 +20,6 @@ type CategoryEditFormProps = {
     name: string;
     order: number;
     showOnCategoriesPage: boolean;
-    showOnHomepage: boolean;
     slug: string;
   };
 };
@@ -160,16 +159,7 @@ export function CategoryEditForm({ category }: CategoryEditFormProps) {
         />
         Activer la categorie sur le front-end
       </label>
-      <div className="grid gap-3 rounded-md border border-zinc-800 bg-zinc-950 p-4 sm:grid-cols-2">
-        <label className="flex items-center gap-3 text-sm font-medium text-zinc-200">
-          <input
-            className="h-4 w-4 accent-primary"
-            defaultChecked={category.showOnHomepage}
-            name="showOnHomepage"
-            type="checkbox"
-          />
-          Afficher dans le bloc home
-        </label>
+      <div className="grid gap-3 rounded-md border border-zinc-800 bg-zinc-950 p-4">
         <label className="flex items-center gap-3 text-sm font-medium text-zinc-200">
           <input
             className="h-4 w-4 accent-primary"

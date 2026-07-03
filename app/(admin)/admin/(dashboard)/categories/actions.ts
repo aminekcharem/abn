@@ -14,7 +14,6 @@ const categorySchema = z.object({
   name: z.string().trim().min(2, "Le nom est obligatoire."),
   order: z.coerce.number().int().min(0),
   showOnCategoriesPage: z.coerce.boolean(),
-  showOnHomepage: z.coerce.boolean(),
   slug: z.string().trim().min(2, "Le slug est obligatoire."),
 });
 
@@ -67,7 +66,6 @@ export async function createCategoryAction(formData: FormData) {
     name: formData.get("name"),
     order: formData.get("order") || 0,
     showOnCategoriesPage: getBoolean(formData, "showOnCategoriesPage"),
-    showOnHomepage: getBoolean(formData, "showOnHomepage"),
     slug:
       formData.get("slug") ||
       slugify(String(formData.get("name") ?? "")),
@@ -89,7 +87,7 @@ export async function createCategoryAction(formData: FormData) {
       name: parsed.data.name,
       order: parsed.data.order,
       showOnCategoriesPage: parsed.data.showOnCategoriesPage,
-      showOnHomepage: parsed.data.showOnHomepage,
+      showOnHomepage: true,
       slug: slugify(parsed.data.slug),
     },
   });
@@ -109,7 +107,6 @@ export async function updateCategoryAction(id: string, formData: FormData) {
     name: formData.get("name"),
     order: formData.get("order") || 0,
     showOnCategoriesPage: getBoolean(formData, "showOnCategoriesPage"),
-    showOnHomepage: getBoolean(formData, "showOnHomepage"),
     slug:
       formData.get("slug") ||
       slugify(String(formData.get("name") ?? "")),
@@ -136,7 +133,6 @@ export async function updateCategoryAction(id: string, formData: FormData) {
       name: parsed.data.name,
       order: parsed.data.order,
       showOnCategoriesPage: parsed.data.showOnCategoriesPage,
-      showOnHomepage: parsed.data.showOnHomepage,
       slug: slugify(parsed.data.slug),
     },
     where: { id },

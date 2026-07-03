@@ -49,7 +49,6 @@ type CategoryOption = {
   isActive: boolean;
   name: string;
   order: number;
-  showOnHomepage: boolean;
 };
 
 type MediaOption = HomepageMediaOption;
@@ -181,10 +180,7 @@ export function HomepageForm({
           fieldName="categoryId"
           items={categories.map((category) => ({
             id: category.id,
-            meta: [
-              category.isActive ? "Active" : "Inactive",
-              category.showOnHomepage ? "Home" : "Masquee home",
-            ].join(" - "),
+            meta: category.isActive ? "Active" : "Inactive",
             name: category.name,
             order: category.order,
           }))}

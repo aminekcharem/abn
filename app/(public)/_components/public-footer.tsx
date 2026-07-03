@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { Mail, MapPin, Phone } from "lucide-react";
 
+import { NewsletterForm } from "./newsletter-form";
 import type { ShowroomSettingsView } from "@/lib/settings";
 
 const footerSections = [
@@ -67,15 +68,7 @@ export function PublicFooter({ settings }: PublicFooterProps) {
               Recevez les nouveaux arrivages, les mises à jour de prix et nos conseils d&apos;achat.
             </p>
           </div>
-          <form className="flex max-w-xl rounded-full border border-white/10 bg-white p-1 md:ml-auto md:w-full">
-            <input
-              className="min-w-0 flex-1 bg-transparent px-4 text-sm text-[#1b1b1b] outline-none placeholder:text-[#1b1b1b]/45"
-              placeholder="Votre adresse e-mail"
-            />
-            <button className="rounded-full bg-[#ffc10a] px-5 py-2 text-sm font-semibold text-[#1b1b1b]" type="button">
-              S&apos;inscrire
-            </button>
-          </form>
+          <NewsletterForm />
         </div>
 
         <div className="mt-10 grid gap-8 md:grid-cols-[1.1fr_1fr_1fr_1fr_1.15fr]">

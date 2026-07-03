@@ -12,6 +12,7 @@ import {
   MessageSquareText,
   Images,
   Home,
+  Send,
   Settings,
   ShoppingCart,
   SlidersHorizontal,
@@ -46,6 +47,7 @@ export function getAdminNavigation(counts: {
     { label: "Media", href: "/admin/media", icon: Images },
     { label: "Utilisateurs", href: "/admin/users", icon: UserCog },
     { label: "Page d'accueil", href: "/admin/homepage", icon: Home },
+    { label: "Newsletter", href: "/admin/newsletter", icon: Send },
     {
       label: "Avis",
       href: "/admin/reviews",

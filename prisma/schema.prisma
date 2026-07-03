@@ -197,6 +197,15 @@ model PurchaseRequest {
   @@index([createdAt])
 }
 
+model NewsletterSubscriber {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([createdAt])
+}
+
 model Review {
   id          String   @id @default(cuid())
   firstName   String

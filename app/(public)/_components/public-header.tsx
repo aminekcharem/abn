@@ -12,7 +12,7 @@ const navLinks = [
   ["Accueil", "/#top"],
   ["Catégories", "/categories"],
   ["Stock", "/#inventory"],
-  ["Marques", "/#brands"],
+  ["Marques", "/marques"],
   ["Avis", "/avis"],
   ["Donner un avis", "/donner-un-avis"],
   ["Contact", "/#contact"],

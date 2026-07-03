@@ -20,7 +20,6 @@ async function getCategory(id: string) {
         name: true,
         order: true,
         showOnCategoriesPage: true,
-        showOnHomepage: true,
         slug: true,
       },
       where: { id },
