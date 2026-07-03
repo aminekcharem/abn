@@ -3,7 +3,7 @@ set -euo pipefail
 
 APP_NAME="${APP_NAME:-autopro}"
 PORT="${PORT:-3000}"
-HOSTNAME="${HOSTNAME:-0.0.0.0}"
+APP_HOST="${APP_HOST:-0.0.0.0}"
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 SERVER_PATH="$ROOT_DIR/.next/standalone/server.js"
 
@@ -63,9 +63,9 @@ cp -R public .next/standalone/public
 
 echo "==> Starting or reloading PM2 app: $APP_NAME"
 if pm2 describe "$APP_NAME" >/dev/null 2>&1; then
-  PORT="$PORT" HOSTNAME="$HOSTNAME" pm2 reload "$APP_NAME" --update-env
+  env PORT="$PORT" HOSTNAME="$APP_HOST" pm2 reload "$APP_NAME" --update-env
 else
-  PORT="$PORT" HOSTNAME="$HOSTNAME" pm2 start "$SERVER_PATH" --name "$APP_NAME"
+  env PORT="$PORT" HOSTNAME="$APP_HOST" pm2 start "$SERVER_PATH" --name "$APP_NAME"
 fi
 
 pm2 save
