@@ -1,0 +1,13 @@
+ALTER TABLE `Vehicle`
+  ADD COLUMN `transportIncluded` BOOLEAN NOT NULL DEFAULT true,
+  ADD COLUMN `transportPrice` DECIMAL(12, 2) NULL,
+  ADD COLUMN `transportCurrency` ENUM('TND', 'EUR') NOT NULL DEFAULT 'TND',
+  MODIFY `year` INT NULL,
+  MODIFY `mileage` INT NULL,
+  MODIFY `power` INT NULL,
+  MODIFY `engine` VARCHAR(191) NULL,
+  MODIFY `transmission` VARCHAR(191) NULL,
+  MODIFY `fuelType` ENUM('ESSENCE', 'DIESEL', 'HYBRIDE', 'ELECTRIQUE') NULL,
+  MODIFY `color` VARCHAR(191) NULL,
+  MODIFY `doors` INT NULL,
+  MODIFY `seats` INT NULL;

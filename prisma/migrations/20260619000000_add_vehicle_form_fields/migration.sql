@@ -1,0 +1,3 @@
+ALTER TABLE `Vehicle`
+  ADD COLUMN `priceCurrency` ENUM('MAD', 'EUR') NOT NULL DEFAULT 'EUR',
+  ADD COLUMN `displacement` VARCHAR(191) NULL;

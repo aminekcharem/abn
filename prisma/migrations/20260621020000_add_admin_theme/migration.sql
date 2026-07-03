@@ -1,0 +1,2 @@
+ALTER TABLE `ShowroomSettings`
+ADD COLUMN `adminTheme` ENUM('DARK', 'LIGHT') NOT NULL DEFAULT 'DARK';

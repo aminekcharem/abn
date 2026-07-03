@@ -1,0 +1,3 @@
+ALTER TABLE `ShowroomSettings`
+ADD COLUMN `websiteLogoUrl` VARCHAR(191) NULL,
+ADD COLUMN `authLogoUrl` VARCHAR(191) NULL;
