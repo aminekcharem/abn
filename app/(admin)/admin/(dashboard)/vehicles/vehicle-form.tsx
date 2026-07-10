@@ -130,7 +130,7 @@ type VehicleFormProps = {
 
 const emptyActionState: VehicleActionState = initialVehicleActionState;
 const MAX_VEHICLE_IMAGES = 100;
-const MAX_VEHICLE_VIDEOS = 8;
+const MAX_VEHICLE_VIDEOS = 100;
 
 const statusLabels = {
   BROUILLON: "Brouillon",

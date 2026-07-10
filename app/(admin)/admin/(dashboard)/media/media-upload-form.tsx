@@ -14,6 +14,7 @@ const initialState: MediaActionState = {
 
 const maxFileSizeMb = 10;
 const maxFileSizeBytes = maxFileSizeMb * 1024 * 1024;
+const maxFiles = 100;
 
 type SelectedFileSummary = {
   name: string;
@@ -55,6 +56,17 @@ export function MediaUploadForm() {
   function updateSelectedFiles(files: FileList | null) {
     const nextFiles = Array.from(files ?? []);
     const oversizedFile = nextFiles.find((file) => file.size > maxFileSizeBytes);
+
+    if (nextFiles.length > maxFiles) {
+      setSelectedFiles([]);
+      setClientError(`Maximum ${maxFiles} images par envoi.`);
+
+      if (inputRef.current) {
+        inputRef.current.value = "";
+      }
+
+      return;
+    }
 
     if (oversizedFile) {
       setSelectedFiles([]);
@@ -105,8 +117,8 @@ export function MediaUploadForm() {
           Ajoutez les images du site
         </p>
         <p className="mt-1 text-xs text-zinc-500">
-          Selection multiple autorisee. Maximum 10 Mo par fichier.
-          PNG, JPG et JPEG sont convertis en WebP.
+          Selection multiple autorisee jusqu&apos;a {maxFiles} images. Maximum 10 Mo par
+          fichier. PNG, JPG et JPEG sont convertis en WebP.
         </p>
         <input
           accept="image/png,image/jpeg,image/svg+xml,image/webp"

@@ -15,7 +15,7 @@ import {
 } from "@/lib/validations/vehicle";
 
 const MAX_VEHICLE_IMAGES = 100;
-const MAX_VEHICLE_VIDEOS = 8;
+const MAX_VEHICLE_VIDEOS = 100;
 const allowedVideoTypes = new Set(["video/mp4", "video/webm", "video/quicktime"]);
 const allowedReportTypes = new Set(["application/pdf"]);
 

@@ -22,6 +22,7 @@ const mediaAttributesSchema = z.object({
 });
 
 const uploadAttributesSchema = mediaAttributesSchema.omit({ id: true });
+const MAX_MEDIA_FILES = 100;
 
 async function ensureAdmin() {
   const session = await auth();
@@ -58,8 +59,8 @@ export async function uploadMediaAssets(
       return { ok: false, message: "Selectionnez au moins une image." };
     }
 
-    if (files.length > 20) {
-      return { ok: false, message: "Maximum 20 images par envoi." };
+    if (files.length > MAX_MEDIA_FILES) {
+      return { ok: false, message: `Maximum ${MAX_MEDIA_FILES} images par envoi.` };
     }
 
     const attributes = uploadAttributesSchema.parse({
