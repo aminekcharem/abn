@@ -2,6 +2,7 @@ import {
   VehicleForm,
   type VehicleFormInitialData,
   type VehicleMediaLibraryAsset,
+  type VehicleReportLibraryAsset,
 } from "../vehicle-form";
 import { getPrisma } from "@/lib/prisma";
 
@@ -43,6 +44,7 @@ const initialData: VehicleFormInitialData = {
   optionIds: [],
   images: [],
   videos: [],
+  inspectionReportUrl: "",
   description: "",
 };
 
@@ -90,6 +92,19 @@ async function getFormOptions() {
         },
       },
     });
+    const reportAssets = await prisma.mediaAsset.findMany({
+      orderBy: { createdAt: "desc" },
+      select: {
+        id: true,
+        localPath: true,
+        originalName: true,
+        title: true,
+      },
+      take: 80,
+      where: {
+        mimeType: "application/pdf",
+      },
+    });
 
     return {
       brands,
@@ -97,6 +112,7 @@ async function getFormOptions() {
       hasDatabaseError: false,
       mediaAssets: mediaAssets as VehicleMediaLibraryAsset[],
       options,
+      reportAssets: reportAssets as VehicleReportLibraryAsset[],
     };
   } catch {
     return {
@@ -105,12 +121,13 @@ async function getFormOptions() {
       hasDatabaseError: true,
       mediaAssets: [],
       options: [],
+      reportAssets: [],
     };
   }
 }
 
 export default async function NewVehiclePage() {
-  const { brands, categories, hasDatabaseError, mediaAssets, options } =
+  const { brands, categories, hasDatabaseError, mediaAssets, options, reportAssets } =
     await getFormOptions();
 
   return (
@@ -138,6 +155,7 @@ export default async function NewVehiclePage() {
         mediaAssets={mediaAssets}
         mode="create"
         options={options}
+        reportAssets={reportAssets}
       />
     </div>
   );

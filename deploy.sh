@@ -17,6 +17,11 @@ if [ ! -f ".env" ]; then
   exit 1
 fi
 
+set -a
+# Export runtime variables so PM2/standalone Next.js uses the same .env as Prisma.
+. "$ROOT_DIR/.env"
+set +a
+
 if ! command -v node >/dev/null 2>&1; then
   echo "Node.js is not installed or not available in PATH."
   exit 1

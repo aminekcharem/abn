@@ -72,6 +72,7 @@ model Category {
   vehicles    Vehicle[]
 
   @@index([isActive])
+  @@index([isActive, order, name])
   @@index([showOnHomepage])
   @@index([showOnCategoriesPage])
 }
@@ -86,6 +87,7 @@ model Brand {
   vehicles      Vehicle[]
 
   @@index([isActive])
+  @@index([isActive, name])
 }
 
 model Option {
@@ -119,7 +121,7 @@ model Vehicle {
   title        String
   slug         String            @unique
   brandId      String
-  categoryId   String
+  categoryId   String?
   model        String?
   generation   String?
   trim         String?
@@ -150,8 +152,9 @@ model Vehicle {
   description  String?           @db.Text
   images       Json
   videos       Json
+  inspectionReportUrl String?
   brand        Brand             @relation(fields: [brandId], references: [id])
-  category     Category          @relation(fields: [categoryId], references: [id])
+  category     Category?         @relation(fields: [categoryId], references: [id])
   options      Option[]
   requests     PurchaseRequest[]
   createdAt    DateTime          @default(now())
@@ -163,6 +166,9 @@ model Vehicle {
   @@index([isFeatured])
   @@index([isNew])
   @@index([price])
+  @@index([status, isFeatured, isNew, createdAt])
+  @@index([categoryId, status, isFeatured, createdAt])
+  @@index([brandId, status, createdAt])
   @@index([year])
 }
 
@@ -255,6 +261,18 @@ model HomepageSettings {
   showFaqs             Boolean  @default(true)
   faqItems             Json
   updatedAt            DateTime @updatedAt
+}
+
+model TranslationEntry {
+  id         String   @id @default(cuid())
+  sourceText String   @unique @db.VarChar(500)
+  targetText String   @db.Text
+  isActive   Boolean  @default(true)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@index([isActive])
+  @@index([updatedAt])
 }
 
 model MediaAsset {

@@ -5,6 +5,7 @@ import {
   VehicleForm,
   type VehicleFormInitialData,
   type VehicleMediaLibraryAsset,
+  type VehicleReportLibraryAsset,
 } from "../../vehicle-form";
 import { getPrisma } from "@/lib/prisma";
 
@@ -88,6 +89,19 @@ async function getEditData(id: string) {
         },
       },
     });
+    const reportAssets = await prisma.mediaAsset.findMany({
+      orderBy: { createdAt: "desc" },
+      select: {
+        id: true,
+        localPath: true,
+        originalName: true,
+        title: true,
+      },
+      take: 80,
+      where: {
+        mimeType: "application/pdf",
+      },
+    });
 
     const color = parseColor(vehicle.color);
 
@@ -96,7 +110,7 @@ async function getEditData(id: string) {
       title: vehicle.title,
       slug: vehicle.slug,
       brandId: vehicle.brandId,
-      categoryId: vehicle.categoryId,
+      categoryId: vehicle.categoryId || "",
       model: vehicle.model || "",
       generation: vehicle.generation || "",
       trim: vehicle.trim || "",
@@ -128,6 +142,7 @@ async function getEditData(id: string) {
       optionIds: vehicle.options.map((option) => option.id),
       images: getImages(vehicle.images),
       videos: getVideos(vehicle.videos),
+      inspectionReportUrl: vehicle.inspectionReportUrl || "",
       description: vehicle.description || "",
     };
 
@@ -138,6 +153,7 @@ async function getEditData(id: string) {
       initialData,
       mediaAssets: mediaAssets as VehicleMediaLibraryAsset[],
       options,
+      reportAssets: reportAssets as VehicleReportLibraryAsset[],
     };
   } catch {
     return {
@@ -147,6 +163,7 @@ async function getEditData(id: string) {
       initialData: null,
       mediaAssets: [],
       options: [],
+      reportAssets: [],
     };
   }
 }
@@ -157,7 +174,7 @@ export default async function EditVehiclePage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  const { brands, categories, hasDatabaseError, initialData, mediaAssets, options } =
+  const { brands, categories, hasDatabaseError, initialData, mediaAssets, options, reportAssets } =
     await getEditData(id);
 
   if (!initialData && !hasDatabaseError) {
@@ -201,6 +218,7 @@ export default async function EditVehiclePage({
         mediaAssets={mediaAssets}
         mode="edit"
         options={options}
+        reportAssets={reportAssets}
       />
     </div>
   );

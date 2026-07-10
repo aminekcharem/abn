@@ -1,10 +1,11 @@
 import { z } from "zod";
 
-const optionalText = (max = 191) => z.string().trim().max(max).optional();
 const emptyToUndefined = (value: unknown) =>
   value === null || (typeof value === "string" && value.trim() === "")
     ? undefined
     : value;
+const optionalText = (max = 191) =>
+  z.preprocess(emptyToUndefined, z.string().trim().max(max).optional());
 const optionalNumber = (schema: z.ZodNumber) =>
   z.preprocess(
     (value) => {
@@ -27,7 +28,7 @@ export const vehicleSchema = z
     title: z.string().trim().min(3, "Le titre est obligatoire."),
     slug: z.string().trim().min(3, "Le slug est obligatoire."),
     brandId: z.string().min(1, "Selectionnez une marque."),
-    categoryId: z.string().min(1, "Selectionnez une categorie."),
+    categoryId: optionalText(),
     model: optionalText(),
     generation: optionalText(),
     trim: optionalText(),
@@ -79,6 +80,7 @@ export const vehicleSchema = z
     optionIds: z.array(z.string()).default([]),
     existingImages: z.array(z.string()).default([]),
     existingVideos: z.array(z.string()).default([]),
+    existingInspectionReportUrl: optionalText(500),
   })
   .superRefine((data, context) => {
     if (!data.transportIncluded && data.transportPrice === undefined) {

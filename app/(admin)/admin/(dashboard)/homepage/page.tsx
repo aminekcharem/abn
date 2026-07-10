@@ -61,7 +61,7 @@ async function getHomepageEditorData() {
       settings,
       vehicles: vehicles.map((vehicle) => ({
         brandName: vehicle.brand.name,
-        categoryName: vehicle.category.name,
+        categoryName: vehicle.category?.name || "Non classé",
         id: vehicle.id,
         images: Array.isArray(vehicle.images)
           ? vehicle.images.filter((image): image is string => typeof image === "string")

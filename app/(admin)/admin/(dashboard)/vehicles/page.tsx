@@ -116,7 +116,7 @@ async function getVehiclePage(params: SearchParams) {
         slug: vehicle.slug,
         image: getFirstImage(vehicle.images),
         brand: vehicle.brand.name,
-        category: vehicle.category.name,
+        category: vehicle.category?.name || "Non classé",
         price: Number(vehicle.price),
         priceCurrency: vehicle.priceCurrency,
         power: vehicle.power,

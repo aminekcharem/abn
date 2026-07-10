@@ -32,6 +32,39 @@ const badgeStyles = {
   yellow: "bg-[#ffc10a] text-[#1b1b1b]",
 };
 
+function getYouTubeVideoId(value: string) {
+  try {
+    const url = new URL(value);
+    const host = url.hostname.replace(/^www\./, "");
+
+    if (host === "youtu.be") {
+      return url.pathname.split("/").filter(Boolean)[0] || "";
+    }
+
+    if (
+      host === "youtube.com" ||
+      host === "m.youtube.com" ||
+      host === "youtube-nocookie.com"
+    ) {
+      const videoId = url.searchParams.get("v");
+      if (videoId) return videoId;
+
+      const embedMatch = url.pathname.match(/\/(?:embed|shorts)\/([^/?#]+)/);
+      return embedMatch?.[1] || "";
+    }
+  } catch {
+    return "";
+  }
+
+  return "";
+}
+
+function getYouTubeEmbedUrl(value: string) {
+  const videoId = getYouTubeVideoId(value);
+
+  return videoId ? `https://www.youtube.com/embed/${videoId}` : "";
+}
+
 export function VehicleGallery({
   badges,
   images,
@@ -187,12 +220,22 @@ export function VehicleGallery({
               className="overflow-hidden rounded-md border border-[#1b1b1b]/10 bg-white shadow-sm"
               key={`${video.src}-${index}`}
             >
-              <video
-                className="aspect-video w-full bg-[#1b1b1b] object-contain"
-                controls
-                preload="metadata"
-                src={video.src}
-              />
+              {getYouTubeEmbedUrl(video.src) ? (
+                <iframe
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                  allowFullScreen
+                  className="aspect-video w-full bg-[#1b1b1b]"
+                  src={getYouTubeEmbedUrl(video.src)}
+                  title={video.title}
+                />
+              ) : (
+                <video
+                  className="aspect-video w-full bg-[#1b1b1b] object-contain"
+                  controls
+                  preload="metadata"
+                  src={video.src}
+                />
+              )}
               <div className="px-4 py-3 text-sm font-semibold text-[#1b1b1b]">
                 {video.title}
               </div>
@@ -204,22 +247,43 @@ export function VehicleGallery({
       {isLightboxOpen ? (
         <div
           aria-modal="true"
-          className="fixed inset-0 z-50 bg-[#1b1b1b]/95 p-4 text-white"
+          className="fixed inset-0 z-[500] overflow-y-auto bg-black text-white md:bg-[#1b1b1b]/95 md:p-4"
           data-testid="vehicle-gallery-lightbox"
           role="dialog"
         >
           <button
             aria-label="Fermer la galerie"
-            className="absolute right-4 top-4 z-10 grid h-11 w-11 place-items-center rounded-full bg-white text-[#1b1b1b] transition hover:bg-[#ffc10a]"
+            className="fixed right-3 top-3 z-[510] inline-flex h-10 items-center gap-2 rounded-full bg-white px-3 text-sm font-semibold text-[#1b1b1b] shadow-lg transition hover:bg-[#ffc10a] md:right-4 md:top-4 md:h-11 md:w-11 md:justify-center md:px-0"
             data-testid="vehicle-gallery-close"
             onClick={() => setIsLightboxOpen(false)}
             type="button"
           >
             <X className="h-5 w-5" />
+            <span className="md:hidden">Retour détails</span>
           </button>
 
+          <div className="md:hidden">
+            <div className="grid gap-1 bg-black pb-1 pt-14">
+              {safeImages.map((image, index) => (
+                <div
+                  className="w-full bg-black"
+                  key={`${image.src}-mobile-${index}`}
+                >
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    alt={image.alt}
+                    className="block h-auto w-full"
+                    decoding="async"
+                    loading={index === 0 ? "eager" : "lazy"}
+                    src={image.src}
+                  />
+                </div>
+              ))}
+            </div>
+          </div>
+
           {safeImages.length > 1 ? (
-            <>
+            <div className="hidden md:block">
               <button
                 aria-label="Image précédente"
                 className="absolute left-4 top-1/2 z-10 grid h-11 w-11 -translate-y-1/2 place-items-center rounded-full bg-white text-[#1b1b1b] transition hover:bg-[#ffc10a]"
@@ -238,16 +302,16 @@ export function VehicleGallery({
               >
                 <ChevronRight className="h-5 w-5" />
               </button>
-            </>
+            </div>
           ) : null}
 
           <button
             aria-label="Fermer l'agrandissement"
-            className="absolute inset-0 h-full w-full cursor-zoom-out"
+            className="absolute inset-0 hidden h-full w-full cursor-zoom-out md:block"
             onClick={() => setIsLightboxOpen(false)}
             type="button"
           />
-          <div className="relative mx-auto flex h-full max-w-6xl items-center justify-center px-10 py-12">
+          <div className="relative mx-auto hidden h-full max-w-6xl items-center justify-center px-10 py-12 md:flex">
             <div className="relative h-full max-h-[82vh] w-full">
               <Image
                 alt={activeImage.alt}
@@ -260,7 +324,7 @@ export function VehicleGallery({
               />
             </div>
           </div>
-          <p className="absolute bottom-5 left-1/2 -translate-x-1/2 rounded-full bg-white/10 px-4 py-2 text-sm font-semibold">
+          <p className="absolute bottom-5 left-1/2 hidden -translate-x-1/2 rounded-full bg-white/10 px-4 py-2 text-sm font-semibold md:block">
             {activeIndex + 1} / {safeImages.length}
           </p>
         </div>

@@ -1,0 +1,2 @@
+ALTER TABLE `Vehicle`
+  MODIFY `categoryId` VARCHAR(191) NULL;

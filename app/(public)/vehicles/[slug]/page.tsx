@@ -1,28 +1,18 @@
 import Image from "next/image";
 import Link from "next/link";
 import type { Metadata } from "next";
-import { notFound, redirect } from "next/navigation";
+import { notFound } from "next/navigation";
 import { Prisma } from "@prisma/client";
 import {
-  CalendarDays,
-  Car,
-  Check,
-  Fuel,
-  Gauge,
+  FileText,
   Mail,
-  Palette,
   Phone,
-  Settings,
-  ShieldCheck,
-  Sparkles,
-  Users,
-  Wrench,
 } from "lucide-react";
-import type { LucideIcon } from "lucide-react";
 
 import { auth } from "@/auth";
 import { getMediaUrl } from "@/lib/cdn";
 import { getPrisma } from "@/lib/prisma";
+import { getPublicBrandLinks } from "@/lib/public-navigation";
 import { getShowroomSettings } from "@/lib/settings";
 import { PublicHeader } from "../../_components/public-header";
 import { VehicleGallery } from "./vehicle-gallery";
@@ -31,7 +21,6 @@ export const dynamic = "force-dynamic";
 
 type VehiclePageProps = {
   params: Promise<{ slug: string }>;
-  searchParams?: Promise<{ request?: string }>;
 };
 
 const statusLabels = {
@@ -51,6 +40,20 @@ function getVideos(videos: Prisma.JsonValue) {
   if (!Array.isArray(videos)) return [];
 
   return videos.filter((video): video is string => typeof video === "string");
+}
+
+function getPublicAssetUrl(value: string) {
+  return /^https?:\/\//i.test(value) ? value : getMediaUrl(value);
+}
+
+function phoneHref(phone: string) {
+  return `tel:${phone.replace(/[^\d+]/g, "")}`;
+}
+
+function whatsappHref(phone: string, message: string) {
+  const cleanPhone = phone.replace(/[^\d]/g, "");
+
+  return `https://wa.me/${cleanPhone}?text=${encodeURIComponent(message)}`;
 }
 
 function formatPrice(price: Prisma.Decimal | number, currency: "TND" | "EUR") {
@@ -94,13 +97,47 @@ async function getVehicle(slug: string, includeDrafts = false) {
   const prisma = getPrisma();
 
   return prisma.vehicle.findFirst({
-    include: {
-      brand: true,
-      category: true,
+    select: {
+      brand: { select: { name: true } },
+      category: { select: { name: true } },
+      categoryId: true,
+      color: true,
+      description: true,
+      displacement: true,
+      doors: true,
+      engine: true,
+      engineCode: true,
+      firstRegistrationDate: true,
+      fuelType: true,
+      gearbox: true,
+      generation: true,
+      id: true,
+      images: true,
+      inspectionReportUrl: true,
+      isFeatured: true,
+      isNew: true,
+      mileage: true,
+      model: true,
+      motorization: true,
       options: {
-        include: { category: true },
         orderBy: [{ category: { order: "asc" } }, { name: "asc" }],
+        select: {
+          id: true,
+          name: true,
+        },
       },
+      power: true,
+      price: true,
+      priceCurrency: true,
+      registration: true,
+      seats: true,
+      status: true,
+      title: true,
+      transmission: true,
+      trim: true,
+      videos: true,
+      vin: true,
+      year: true,
     },
     where: {
       slug,
@@ -148,24 +185,22 @@ export async function generateMetadata({
 
 export default async function VehicleDetailsPage({
   params,
-  searchParams,
 }: VehiclePageProps) {
-  const [{ slug }, query, session] = await Promise.all([
+  const [{ slug }, session] = await Promise.all([
     params,
-    searchParams,
     auth(),
   ]);
-  const [vehicle, settings] = await Promise.all([
+  const [vehicle, settings, brandLinks] = await Promise.all([
     getVehicle(slug, Boolean(session?.user)),
     getShowroomSettings(),
+    getPublicBrandLinks(),
   ]);
 
   if (!vehicle) {
     notFound();
   }
 
-  const vehicleId = vehicle.id;
-  const vehicleSlug = vehicle.slug;
+  const vehicleCategoryName = vehicle.category?.name || "Non classé";
   const images = getImages(vehicle.images);
   const videos = getVideos(vehicle.videos);
   const galleryImages = images.length
@@ -176,65 +211,37 @@ export default async function VehicleDetailsPage({
     : [{ alt: vehicle.title, src: "/showroom-hero.png" }];
   const color = parseColor(vehicle.color);
   const firstRegistration = formatDate(vehicle.firstRegistrationDate);
-  const optionGroups = vehicle.options.reduce<
-    Array<{ id: string; name: string; options: string[] }>
-  >((groups, option) => {
-    const existing = groups.find((group) => group.id === option.category.id);
+  const vehicleOptions = vehicle.options.map((option) => ({
+    id: option.id,
+    name: option.name,
+  }));
+  const contactMessage = `Bonjour, je suis intéressé par le véhicule ${vehicle.title}.`;
+  const whatsappUrl = whatsappHref(settings.contactPhone, contactMessage);
+  const inspectionReportUrl = vehicle.inspectionReportUrl
+    ? getPublicAssetUrl(vehicle.inspectionReportUrl)
+    : null;
 
-    if (existing) {
-      existing.options.push(option.name);
-      return groups;
-    }
-
-    groups.push({
-      id: option.category.id,
-      name: option.category.name,
-      options: [option.name],
-    });
-
-    return groups;
-  }, []);
-
-  const relatedVehicles = await getPrisma().vehicle.findMany({
-    include: {
-      brand: { select: { name: true } },
-      category: { select: { name: true } },
-    },
-    orderBy: [{ isFeatured: "desc" }, { createdAt: "desc" }],
-    take: 3,
-    where: {
-      categoryId: vehicle.categoryId,
-      id: { not: vehicle.id },
-      status: { not: "BROUILLON" },
-    },
-  });
-
-  async function createPurchaseRequest(formData: FormData) {
-    "use server";
-
-    const fullName = String(formData.get("fullName") ?? "").trim();
-    const email = String(formData.get("email") ?? "").trim();
-    const phone = String(formData.get("phone") ?? "").trim();
-    const message = String(formData.get("message") ?? "").trim();
-    const financing = formData.get("financing") === "on";
-
-    if (!fullName || !email) {
-      redirect(`/vehicles/${vehicleSlug}?request=missing#request`);
-    }
-
-    await getPrisma().purchaseRequest.create({
-      data: {
-        email,
-        financing,
-        fullName,
-        message: message || null,
-        phone: phone || null,
-        vehicleId,
-      },
-    });
-
-    redirect(`/vehicles/${vehicleSlug}?request=sent#request`);
-  }
+  const relatedVehicles = vehicle.categoryId
+    ? await getPrisma().vehicle.findMany({
+        select: {
+          brand: { select: { name: true } },
+          category: { select: { name: true } },
+          id: true,
+          images: true,
+          price: true,
+          priceCurrency: true,
+          slug: true,
+          title: true,
+        },
+        orderBy: [{ isFeatured: "desc" }, { createdAt: "desc" }],
+        take: 3,
+        where: {
+          categoryId: vehicle.categoryId,
+          id: { not: vehicle.id },
+          status: { not: "BROUILLON" },
+        },
+      })
+    : [];
 
   const jsonLd = {
     "@context": "https://schema.org",
@@ -277,24 +284,24 @@ export default async function VehicleDetailsPage({
     ...(vehicle.transmission ? { vehicleTransmission: vehicle.transmission } : {}),
   };
 
-  const specs: Array<[string, string, LucideIcon]> = [
-    vehicle.year ? ["Année", String(vehicle.year), CalendarDays] : null,
+  const essentialRows = [
+    vehicle.year ? ["Année", String(vehicle.year)] : null,
     vehicle.mileage !== null
-      ? ["Kilométrage", `${formatNumber(vehicle.mileage)} km`, Gauge]
+      ? ["Kilométrage", `${formatNumber(vehicle.mileage)} km`]
       : null,
-    vehicle.fuelType ? ["Carburant", vehicle.fuelType.toLowerCase(), Fuel] : null,
+    vehicle.fuelType ? ["Carburant", vehicle.fuelType.toLowerCase()] : null,
     vehicle.transmission
-      ? ["Transmission", vehicle.transmission.toLowerCase(), Settings]
+      ? ["Transmission", vehicle.transmission.toLowerCase()]
       : null,
-    vehicle.power ? ["Puissance", `${vehicle.power} CV`, Wrench] : null,
-    vehicle.seats ? ["Places", `${vehicle.seats} places`, Users] : null,
-    vehicle.doors ? ["Portes", `${vehicle.doors} portes`, Car] : null,
-    color.name ? ["Couleur", color.name, Palette] : null,
-  ].filter((spec): spec is [string, string, LucideIcon] => Boolean(spec));
+    vehicle.power ? ["Puissance", `${vehicle.power} CV`] : null,
+    vehicle.seats ? ["Places", `${vehicle.seats} places`] : null,
+    vehicle.doors ? ["Portes", `${vehicle.doors} portes`] : null,
+    color.name ? ["Couleur", color.name] : null,
+  ].filter((spec): spec is [string, string] => Boolean(spec));
 
   const technicalRows = [
     ["Marque", vehicle.brand.name],
-    ["Catégorie", vehicle.category.name],
+    ["Catégorie", vehicleCategoryName],
     ["Modèle", vehicle.model],
     ["Génération", vehicle.generation],
     ["Finition", vehicle.trim],
@@ -308,6 +315,8 @@ export default async function VehicleDetailsPage({
     ["VIN", vehicle.vin],
   ].filter(([, value]) => Boolean(value));
 
+  const detailsRows = [...essentialRows, ...technicalRows];
+
   return (
     <main className="min-h-screen bg-white text-[#1b1b1b]">
       <script
@@ -317,7 +326,7 @@ export default async function VehicleDetailsPage({
         type="application/ld+json"
       />
 
-      <PublicHeader settings={settings} sticky={false} />
+      <PublicHeader brandLinks={brandLinks} settings={settings} sticky={false} />
 
       <section className="px-4 py-8 sm:px-8 lg:py-10">
         <div className="mx-auto max-w-7xl">
@@ -326,7 +335,7 @@ export default async function VehicleDetailsPage({
               Accueil
             </Link>
             <span>/</span>
-            <span>{vehicle.category.name}</span>
+            <span>{vehicleCategoryName}</span>
             <span>/</span>
             <span className="text-[#1b1b1b]">{vehicle.title}</span>
           </div>
@@ -346,7 +355,7 @@ export default async function VehicleDetailsPage({
               images={galleryImages}
               title={vehicle.title}
               videos={videos.map((video, index) => ({
-                src: getMediaUrl(video),
+                src: getPublicAssetUrl(video),
                 title: `${vehicle.title} vidéo ${index + 1}`,
               }))}
             />
@@ -354,7 +363,7 @@ export default async function VehicleDetailsPage({
             <aside className="lg:sticky lg:top-6 lg:self-start">
               <div className="rounded-md border border-[#1b1b1b]/10 bg-white p-6 shadow-sm">
                 <p className="text-sm font-semibold text-[#1b1b1b]/55">
-                  {vehicle.brand.name} / {vehicle.category.name}
+                  {vehicle.brand.name} / {vehicleCategoryName}
                 </p>
                 <h1 className="mt-3 text-3xl font-semibold leading-tight sm:text-4xl">
                   {vehicle.title}
@@ -370,20 +379,33 @@ export default async function VehicleDetailsPage({
 
                 <div className="mt-6 grid gap-3">
                   <a
-                    className="inline-flex items-center justify-center rounded-full bg-[#ffc10a] px-5 py-3 text-sm font-semibold text-[#1b1b1b] transition hover:bg-[#1b1b1b] hover:text-white"
-                    href="#request"
+                    className="inline-flex items-center justify-center rounded-full bg-[#20b65a] px-5 py-3 text-sm font-semibold text-white transition hover:bg-[#168a43]"
+                    href={whatsappUrl}
+                    rel="noreferrer"
+                    target="_blank"
                   >
-                    Demander ce véhicule
+                    Demander sur WhatsApp
                   </a>
                   <a
                     className="inline-flex items-center justify-center rounded-full border border-[#1b1b1b]/15 px-5 py-3 text-sm font-semibold transition hover:border-[#1b1b1b] hover:bg-[#1b1b1b] hover:text-white"
-                    href={`mailto:sales@autopro.test?subject=${encodeURIComponent(
+                    href={`mailto:${settings.contactEmail}?subject=${encodeURIComponent(
                       `Demande ${vehicle.title}`,
                     )}`}
                   >
                     <Mail className="mr-2 h-4 w-4" />
                     Contacter le showroom
                   </a>
+                  {inspectionReportUrl ? (
+                    <a
+                      className="inline-flex items-center justify-center rounded-full border border-[#ffc10a]/70 bg-[#ffc10a]/10 px-5 py-3 text-sm font-semibold text-[#1b1b1b] transition hover:bg-[#ffc10a]"
+                      href={inspectionReportUrl}
+                      rel="noreferrer"
+                      target="_blank"
+                    >
+                      <FileText className="mr-2 h-4 w-4" />
+                      Rapport d&apos;inspection
+                    </a>
+                  ) : null}
                 </div>
               </div>
             </aside>
@@ -391,49 +413,60 @@ export default async function VehicleDetailsPage({
         </div>
       </section>
 
-      <section className="px-4 pb-10 sm:px-8">
+      {detailsRows.length ? (
+        <section className="px-4 pb-10 sm:px-8">
         <div className="mx-auto max-w-7xl rounded-md bg-[#f8f8f6] px-4 py-5 sm:px-5 sm:py-6">
           <div className="mb-5 flex flex-wrap items-end justify-between gap-3">
             <div>
               <p className="text-sm font-semibold text-[#ffc10a]">Caractéristiques</p>
               <h2 className="mt-1 text-2xl font-semibold text-[#050b20]">
-                Points essentiels
+                Points essentiels & fiche technique
               </h2>
             </div>
             <span className="hidden h-px flex-1 bg-gradient-to-r from-[#ffc10a] via-[#050b20]/10 to-transparent md:block" />
           </div>
 
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            {specs.map(([label, value, Icon], index) => (
+          <div className="grid overflow-hidden rounded-md border border-[#050b20]/10 bg-white shadow-[0_18px_45px_rgba(5,11,32,0.06)] sm:grid-cols-2 lg:grid-cols-4">
+            {detailsRows.map(([label, value]) => (
               <div
-                className="vehicle-spec-card group relative min-h-32 overflow-hidden rounded-md border border-[#050b20]/10 bg-white p-5 shadow-[0_18px_45px_rgba(5,11,32,0.06)] transition duration-300 hover:-translate-y-1 hover:border-[#ffc10a]/70 hover:shadow-[0_26px_70px_rgba(5,11,32,0.12)]"
+                className="border-b border-[#050b20]/10 p-4 last:border-b-0 sm:odd:border-r lg:border-r lg:[&:nth-child(4n)]:border-r-0"
                 key={label}
-                style={{ animationDelay: `${index * 70}ms` }}
               >
-                <div className="relative z-10 flex h-full flex-col justify-between">
-                  <div className="flex items-center justify-between gap-4">
-                    <span className="grid h-11 w-11 place-items-center rounded-md bg-[#ffc10a]/15 text-[#050b20] transition duration-300 group-hover:bg-[#ffc10a] group-hover:shadow-[0_14px_28px_rgba(255,193,10,0.28)]">
-                      <Icon className="h-5 w-5" />
-                    </span>
-                    <span className="h-2 w-2 rounded-full bg-[#ffc10a] opacity-40 transition duration-300 group-hover:scale-[2.4] group-hover:opacity-100" />
-                  </div>
-                  <div className="mt-5">
-                    <p className="text-xs font-semibold uppercase text-[#050b20]/45">
-                      {label}
-                    </p>
-                    <p className="mt-1 text-lg font-semibold capitalize text-[#050b20]">
-                      {value}
-                    </p>
-                  </div>
-                </div>
+                <p className="text-xs font-semibold uppercase text-[#050b20]/45">
+                  {label}
+                </p>
+                <p className="mt-1 text-sm font-semibold capitalize text-[#050b20]">
+                  {value}
+                </p>
               </div>
             ))}
           </div>
         </div>
-      </section>
+        </section>
+      ) : null}
+
+      {vehicleOptions.length ? (
+        <section className="bg-white px-4 pb-10 sm:px-8">
+          <div className="mx-auto max-w-7xl">
+            <h2 className="text-xs font-bold uppercase tracking-[0.06em] text-[#1b1b1b]">
+              Équipements
+            </h2>
+            <ul className="mt-4 flex flex-wrap gap-2.5">
+              {vehicleOptions.map((option) => (
+                <li
+                  className="rounded-full border border-[#1b1b1b]/10 bg-[#f6f6f4] px-4 py-2 text-xs font-medium leading-none text-[#2f3338] shadow-[inset_0_1px_0_rgba(255,255,255,0.75)]"
+                  key={option.id}
+                >
+                  {option.name}
+                </li>
+              ))}
+            </ul>
+          </div>
+        </section>
+      ) : null}
 
       <section className="px-4 py-10 sm:px-8">
-        <div className="mx-auto grid max-w-7xl gap-8 lg:grid-cols-[0.9fr_1.1fr]">
+        <div className="mx-auto max-w-7xl">
           {vehicle.description ? (
             <article>
               <p className="text-sm font-semibold text-[#ffc10a]">Description</p>
@@ -444,117 +477,43 @@ export default async function VehicleDetailsPage({
             </article>
           ) : null}
 
-          {technicalRows.length ? (
-            <article>
-              <p className="text-sm font-semibold text-[#ffc10a]">Détails</p>
-              <h2 className="mt-2 text-2xl font-semibold">Fiche technique</h2>
-              <div className="mt-5 grid overflow-hidden rounded-md border border-[#1b1b1b]/10 sm:grid-cols-2">
-                {technicalRows.map(([label, value]) => (
-                  <div
-                    className="border-b border-[#1b1b1b]/10 p-4 last:border-b-0 sm:odd:border-r"
-                    key={label}
-                  >
-                    <p className="text-xs font-semibold uppercase text-[#1b1b1b]/45">
-                      {label}
-                    </p>
-                    <p className="mt-1 text-sm font-semibold">{value}</p>
-                  </div>
-                ))}
-              </div>
-            </article>
-          ) : null}
-        </div>
-      </section>
-
-      {optionGroups.length ? (
-        <section className="bg-white px-4 py-12 sm:px-8">
-          <div className="mx-auto max-w-7xl">
-            <div className="flex items-end justify-between gap-4">
-              <div>
-                <p className="text-sm font-semibold text-[#ffc10a]">Équipements</p>
-                <h2 className="mt-2 text-2xl font-semibold">Options disponibles</h2>
-              </div>
-              <ShieldCheck className="hidden h-10 w-10 text-[#1b1b1b]/15 sm:block" />
-            </div>
-            <div className="mt-7 grid gap-5 md:grid-cols-2 xl:grid-cols-3">
-              {optionGroups.map((group) => (
-                <article className="rounded-md bg-white p-6 shadow-sm" key={group.id}>
-                  <h3 className="font-semibold">{group.name}</h3>
-                  <ul className="mt-5 grid gap-3 text-sm text-[#1b1b1b]/70">
-                    {group.options.map((option) => (
-                      <li className="flex items-center gap-3" key={option}>
-                        <span className="grid h-5 w-5 shrink-0 place-items-center rounded-full bg-[#ffc10a] text-[#1b1b1b]">
-                          <Check className="h-3.5 w-3.5" />
-                        </span>
-                        {option}
-                      </li>
-                    ))}
-                  </ul>
-                </article>
-              ))}
-            </div>
-          </div>
-        </section>
-      ) : null}
-
-      <section className="px-4 py-12 sm:px-8" id="request">
-        <div className="mx-auto grid max-w-7xl gap-8 rounded-md bg-[#1b1b1b] p-6 text-white md:grid-cols-[0.75fr_1.25fr] md:p-10">
-          <div>
-            <Sparkles className="h-9 w-9 text-[#ffc10a]" />
-            <h2 className="mt-5 text-2xl font-semibold">Demande d&apos;achat</h2>
-            <p className="mt-4 text-sm leading-7 text-white/65">
-              Envoyez votre intérêt pour ce véhicule. La demande sera disponible
-              dans le backoffice pour suivi commercial.
-            </p>
-            {query?.request === "sent" ? (
-              <p className="mt-5 rounded-md bg-emerald-400/15 px-4 py-3 text-sm font-semibold text-emerald-100">
-                Votre demande a été envoyée.
-              </p>
-            ) : null}
-            {query?.request === "missing" ? (
-              <p className="mt-5 rounded-md bg-red-400/15 px-4 py-3 text-sm font-semibold text-red-100">
-                Le nom et l&apos;e-mail sont obligatoires.
-              </p>
-            ) : null}
-          </div>
-
-          <form action={createPurchaseRequest} className="grid gap-4 sm:grid-cols-2">
-            <input
-              className="h-12 rounded-md border border-white/10 bg-white px-4 text-sm text-[#1b1b1b] outline-none"
-              name="fullName"
-              placeholder="Nom complet"
-              required
-            />
-            <input
-              className="h-12 rounded-md border border-white/10 bg-white px-4 text-sm text-[#1b1b1b] outline-none"
-              name="email"
-              placeholder="E-mail"
-              required
-              type="email"
-            />
-            <input
-              className="h-12 rounded-md border border-white/10 bg-white px-4 text-sm text-[#1b1b1b] outline-none"
-              name="phone"
-              placeholder="Téléphone"
-              type="tel"
-            />
-            <label className="flex h-12 items-center gap-3 rounded-md border border-white/10 bg-white/5 px-4 text-sm font-semibold">
-              <input className="h-4 w-4 accent-[#ffc10a]" name="financing" type="checkbox" />
-              Besoin de financement
-            </label>
-            <textarea
-              className="min-h-28 rounded-md border border-white/10 bg-white px-4 py-3 text-sm text-[#1b1b1b] outline-none sm:col-span-2"
-              name="message"
-              placeholder="Message"
-            />
-            <button
-              className="inline-flex h-12 items-center justify-center rounded-full bg-[#ffc10a] px-6 text-sm font-semibold text-[#1b1b1b] transition hover:bg-white sm:col-span-2"
-              type="submit"
+          <div className="mt-6 flex flex-wrap gap-3">
+            <a
+              className="inline-flex min-h-11 items-center justify-center rounded-md bg-[#20b65a] px-5 py-3 text-sm font-semibold text-white transition hover:bg-[#168a43]"
+              href={whatsappUrl}
+              rel="noreferrer"
+              target="_blank"
+            >
+              Demander sur WhatsApp
+            </a>
+            <a
+              className="inline-flex min-h-11 items-center justify-center rounded-md bg-[#1b1b1b] px-5 py-3 text-sm font-semibold text-white transition hover:bg-[#303030]"
+              href={phoneHref(settings.contactPhone)}
             >
               <Phone className="mr-2 h-4 w-4" />
-              Envoyer la demande
-            </button>
-          </form>
+              Appeler
+            </a>
+            <a
+              className="inline-flex min-h-11 items-center justify-center rounded-md border border-[#1b1b1b]/15 px-5 py-3 text-sm font-semibold text-[#1b1b1b] transition hover:border-[#1b1b1b] hover:bg-[#1b1b1b] hover:text-white"
+              href={`mailto:${settings.contactEmail}?subject=${encodeURIComponent(
+                `Demande ${vehicle.title}`,
+              )}`}
+            >
+              <Mail className="mr-2 h-4 w-4" />
+              E-mail
+            </a>
+            {inspectionReportUrl ? (
+              <a
+                className="inline-flex min-h-11 items-center justify-center rounded-md bg-[#f5a400] px-5 py-3 text-sm font-semibold text-[#1b1b1b] transition hover:bg-[#ffc10a]"
+                href={inspectionReportUrl}
+                rel="noreferrer"
+                target="_blank"
+              >
+                <FileText className="mr-2 h-4 w-4" />
+                Rapport d&apos;inspection
+              </a>
+            ) : null}
+          </div>
         </div>
       </section>
 
@@ -580,12 +539,11 @@ export default async function VehicleDetailsPage({
                         loading="lazy"
                         sizes="(max-width: 768px) 100vw, 33vw"
                         src={relatedImage ? getMediaUrl(relatedImage) : "/showroom-hero.png"}
-                        unoptimized
                       />
                     </div>
                     <div className="p-5">
                       <p className="text-xs font-semibold text-[#1b1b1b]/45">
-                        {item.brand.name} / {item.category.name}
+                        {item.brand.name} / {item.category?.name || "Non classé"}
                       </p>
                       <h3 className="mt-2 font-semibold">{item.title}</h3>
                       <p className="mt-4 font-semibold">

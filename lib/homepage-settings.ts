@@ -1,4 +1,5 @@
 import { getPrisma } from "@/lib/prisma";
+import { unstable_cache } from "next/cache";
 
 export type HomepageHeroSlide = {
   imagePath: string | null;
@@ -221,7 +222,7 @@ function normalizeHomepageSettings(
   };
 }
 
-export async function getHomepageSettings(): Promise<HomepageSettingsView> {
+async function readHomepageSettings(): Promise<HomepageSettingsView> {
   try {
     const homepageSettings = getHomepageSettingsDelegate();
 
@@ -243,3 +244,12 @@ export async function getHomepageSettings(): Promise<HomepageSettingsView> {
     return defaultHomepageSettings;
   }
 }
+
+export const getHomepageSettings = unstable_cache(
+  readHomepageSettings,
+  ["homepage-settings"],
+  {
+    revalidate: 300,
+    tags: ["homepage-settings"],
+  },
+);

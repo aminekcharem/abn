@@ -1,5 +1,6 @@
 import { getMediaUrl } from "@/lib/cdn";
 import { getPrisma } from "@/lib/prisma";
+import { unstable_cache } from "next/cache";
 
 export type ShowroomSettingsView = {
   adminTheme: "DARK" | "LIGHT";
@@ -68,7 +69,7 @@ function getShowroomSettingsDelegate() {
   return prisma.showroomSettings;
 }
 
-export async function getShowroomSettings(): Promise<ShowroomSettingsView> {
+async function readShowroomSettings(): Promise<ShowroomSettingsView> {
   try {
     const showroomSettings = getShowroomSettingsDelegate();
 
@@ -119,3 +120,12 @@ export async function getShowroomSettings(): Promise<ShowroomSettingsView> {
     return defaultShowroomSettings;
   }
 }
+
+export const getShowroomSettings = unstable_cache(
+  readShowroomSettings,
+  ["showroom-settings"],
+  {
+    revalidate: 300,
+    tags: ["showroom-settings"],
+  },
+);

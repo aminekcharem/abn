@@ -1,5 +1,7 @@
-import { readFile, stat } from "node:fs/promises";
+import { createReadStream } from "node:fs";
+import { stat } from "node:fs/promises";
 import path from "node:path";
+import { Readable } from "node:stream";
 import { notFound } from "next/navigation";
 import type { NextRequest } from "next/server";
 
@@ -14,10 +16,6 @@ const contentTypes: Record<string, string> = {
   ".svg": "image/svg+xml",
   ".webp": "image/webp",
 };
-
-function getUploadsRoot() {
-  return path.join(/* turbopackIgnore: true */ process.cwd(), "public", "uploads");
-}
 
 function getUploadFilePath(segments: string[]) {
   if (
@@ -34,7 +32,12 @@ function getUploadFilePath(segments: string[]) {
     return null;
   }
 
-  return path.join(getUploadsRoot(), ...segments);
+  return path.join(
+    /*turbopackIgnore: true*/ process.cwd(),
+    "public",
+    "uploads",
+    ...segments,
+  );
 }
 
 export async function GET(
@@ -54,13 +57,13 @@ export async function GET(
     notFound();
   }
 
-  const file = await readFile(filePath);
+  const file = Readable.toWeb(createReadStream(filePath)) as ReadableStream;
   const extension = path.extname(filePath).toLowerCase();
   const contentType = contentTypes[extension] ?? "application/octet-stream";
 
   return new Response(file, {
     headers: {
-      "Cache-Control": "public, max-age=0",
+      "Cache-Control": "public, max-age=31536000, immutable",
       "Content-Length": String(fileStats.size),
       "Content-Type": contentType,
     },

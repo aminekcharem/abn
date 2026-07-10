@@ -1,6 +1,6 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
+import { revalidatePath, revalidateTag } from "next/cache";
 import { z } from "zod";
 
 import { auth } from "@/auth";
@@ -262,9 +262,11 @@ export async function updateShowroomSettings(
     });
 
     revalidatePath("/");
+    revalidatePath("/", "layout");
     revalidatePath("/admin/login");
     revalidatePath("/admin/settings");
     revalidatePath("/admin", "layout");
+    revalidateTag("showroom-settings", "max");
 
     return {
       ok: true,

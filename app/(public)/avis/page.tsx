@@ -3,9 +3,10 @@ import { Star } from "lucide-react";
 
 import { PublicHeader } from "../_components/public-header";
 import { getPrisma } from "@/lib/prisma";
+import { getPublicBrandLinks } from "@/lib/public-navigation";
 import { getShowroomSettings } from "@/lib/settings";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 300;
 
 type PublicReview = {
   firstName: string;
@@ -52,14 +53,15 @@ function averageRating(reviews: PublicReview[]) {
 }
 
 export default async function ReviewsPage() {
-  const [settings, reviews] = await Promise.all([
+  const [settings, reviews, brandLinks] = await Promise.all([
     getShowroomSettings(),
     getReviews(),
+    getPublicBrandLinks(),
   ]);
 
   return (
     <main className="min-h-screen bg-white text-[#1b1b1b]">
-      <PublicHeader settings={settings} />
+      <PublicHeader brandLinks={brandLinks} settings={settings} />
 
       <section className="bg-white px-4 py-14 sm:px-8">
         <div className="mx-auto grid max-w-7xl gap-8 lg:grid-cols-[0.75fr_1.25fr] lg:items-end">

@@ -1,6 +1,6 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
+import { revalidatePath, revalidateTag } from "next/cache";
 import { z } from "zod";
 
 import { auth } from "@/auth";
@@ -149,6 +149,8 @@ export async function createBrandAction(
   revalidatePath("/admin/brands");
   revalidatePath("/admin/vehicles/new");
   revalidatePath("/");
+  revalidatePath("/marques");
+  revalidateTag("public-brand-links", "max");
 
   return {
     message: "Marque ajoutee avec succes.",
@@ -180,6 +182,8 @@ export async function updateBrandLogoAction(formData: FormData) {
 
   revalidatePath("/admin/brands");
   revalidatePath("/");
+  revalidatePath("/marques");
+  revalidateTag("public-brand-links", "max");
 }
 
 export async function toggleBrandStatusAction(formData: FormData) {
@@ -202,4 +206,6 @@ export async function toggleBrandStatusAction(formData: FormData) {
   revalidatePath("/admin/brands");
   revalidatePath("/admin/vehicles/new");
   revalidatePath("/");
+  revalidatePath("/marques");
+  revalidateTag("public-brand-links", "max");
 }

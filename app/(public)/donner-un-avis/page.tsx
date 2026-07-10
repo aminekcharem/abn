@@ -3,16 +3,20 @@ import { Star } from "lucide-react";
 
 import { ReviewForm } from "./review-form";
 import { PublicHeader } from "../_components/public-header";
+import { getPublicBrandLinks } from "@/lib/public-navigation";
 import { getShowroomSettings } from "@/lib/settings";
 
 export const dynamic = "force-dynamic";
 
 export default async function GiveReviewPage() {
-  const settings = await getShowroomSettings();
+  const [settings, brandLinks] = await Promise.all([
+    getShowroomSettings(),
+    getPublicBrandLinks(),
+  ]);
 
   return (
     <main className="min-h-screen bg-white text-[#1b1b1b]">
-      <PublicHeader settings={settings} />
+      <PublicHeader brandLinks={brandLinks} settings={settings} />
 
       <section className="px-4 py-14 sm:px-8">
         <div className="mx-auto grid max-w-6xl gap-8 lg:grid-cols-[0.85fr_1.15fr] lg:items-start">

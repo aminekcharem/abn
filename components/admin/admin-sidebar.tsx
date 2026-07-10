@@ -11,6 +11,7 @@ import {
   Mail,
   MessageSquareText,
   Images,
+  Languages,
   Home,
   Send,
   Settings,
@@ -47,6 +48,7 @@ export function getAdminNavigation(counts: {
     { label: "Media", href: "/admin/media", icon: Images },
     { label: "Utilisateurs", href: "/admin/users", icon: UserCog },
     { label: "Page d'accueil", href: "/admin/homepage", icon: Home },
+    { label: "Translate", href: "/admin/translations", icon: Languages },
     { label: "Newsletter", href: "/admin/newsletter", icon: Send },
     {
       label: "Avis",

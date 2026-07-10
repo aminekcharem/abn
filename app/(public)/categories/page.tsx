@@ -15,9 +15,10 @@ import type { LucideIcon } from "lucide-react";
 import { PublicHeader } from "../_components/public-header";
 import { getMediaUrl } from "@/lib/cdn";
 import { getPrisma } from "@/lib/prisma";
+import { getPublicBrandLinks } from "@/lib/public-navigation";
 import { getShowroomSettings } from "@/lib/settings";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 300;
 
 type CategoryCard = {
   description: string | null;
@@ -72,14 +73,15 @@ async function getCategories() {
 }
 
 export default async function CategoriesPage() {
-  const [categories, settings] = await Promise.all([
+  const [categories, settings, brandLinks] = await Promise.all([
     getCategories(),
     getShowroomSettings(),
+    getPublicBrandLinks(),
   ]);
 
   return (
     <main className="min-h-screen bg-white text-[#1b1b1b]">
-      <PublicHeader settings={settings} sticky={false} />
+      <PublicHeader brandLinks={brandLinks} settings={settings} sticky={false} />
 
       <section className="px-4 py-12 sm:px-8">
         <div className="mx-auto max-w-7xl">

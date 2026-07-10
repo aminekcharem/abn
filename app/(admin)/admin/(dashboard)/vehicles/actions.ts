@@ -2,7 +2,7 @@
 
 import { mkdir, writeFile } from "node:fs/promises";
 import path from "node:path";
-import { revalidatePath } from "next/cache";
+import { revalidatePath, revalidateTag } from "next/cache";
 import type { FuelType } from "@prisma/client";
 
 import { auth } from "@/auth";
@@ -15,8 +15,9 @@ import {
 } from "@/lib/validations/vehicle";
 
 const MAX_VEHICLE_IMAGES = 100;
-const MAX_VEHICLE_VIDEOS = 2;
+const MAX_VEHICLE_VIDEOS = 8;
 const allowedVideoTypes = new Set(["video/mp4", "video/webm", "video/quicktime"]);
+const allowedReportTypes = new Set(["application/pdf"]);
 
 async function ensureAdmin() {
   const session = await auth();
@@ -91,6 +92,7 @@ function getVehiclePayload(formData: FormData) {
     optionIds: formData.getAll("optionIds").map(String),
     existingImages: formData.getAll("existingImages").map(String),
     existingVideos: formData.getAll("existingVideos").map(String),
+    existingInspectionReportUrl: formData.get("existingInspectionReportUrl"),
   });
 }
 
@@ -127,6 +129,12 @@ function getVideoFiles(formData: FormData) {
   return formData
     .getAll("videos")
     .filter((file): file is File => file instanceof File && file.size > 0);
+}
+
+function getInspectionReportFile(formData: FormData) {
+  const file = formData.get("inspectionReport");
+
+  return file instanceof File && file.size > 0 ? file : null;
 }
 
 function sanitizeFilename(value: string) {
@@ -202,16 +210,103 @@ async function saveVideoFiles(files: File[]) {
   return urls;
 }
 
+function normalizeYouTubeUrl(value: string) {
+  const cleanValue = value.trim();
+  if (!cleanValue) return "";
+
+  try {
+    const url = new URL(cleanValue);
+    const host = url.hostname.replace(/^www\./, "");
+    const isYouTubeHost =
+      host === "youtube.com" ||
+      host === "m.youtube.com" ||
+      host === "youtu.be" ||
+      host === "youtube-nocookie.com";
+
+    if (!isYouTubeHost) return cleanValue;
+
+    if (host === "youtu.be") {
+      const videoId = url.pathname.split("/").filter(Boolean)[0];
+      return videoId ? `https://www.youtube.com/watch?v=${videoId}` : cleanValue;
+    }
+
+    const videoId = url.searchParams.get("v");
+    if (videoId) {
+      return `https://www.youtube.com/watch?v=${videoId}`;
+    }
+
+    const embedMatch = url.pathname.match(/\/(?:embed|shorts)\/([^/?#]+)/);
+    return embedMatch?.[1]
+      ? `https://www.youtube.com/watch?v=${embedMatch[1]}`
+      : cleanValue;
+  } catch {
+    return cleanValue;
+  }
+}
+
+function normalizeStoredVideos(values: string[]) {
+  return values
+    .map((value) => normalizeYouTubeUrl(value))
+    .filter(Boolean);
+}
+
+async function saveInspectionReportFile(file: File | null) {
+  if (!file) return null;
+
+  const maxSizeMb = 20;
+
+  if (!allowedReportTypes.has(file.type)) {
+    throw new Error("Le rapport d'inspection doit etre un fichier PDF.");
+  }
+
+  if (file.size > maxSizeMb * 1024 * 1024) {
+    throw new Error(`Le rapport d'inspection ne doit pas depasser ${maxSizeMb} Mo.`);
+  }
+
+  const uploadDir = path.join(
+    process.cwd(),
+    "public",
+    "uploads",
+    "vehicles",
+    "reports",
+  );
+  await mkdir(uploadDir, { recursive: true });
+
+  const filename = `${Date.now()}-${crypto.randomUUID()}-${sanitizeFilename(file.name)}.pdf`;
+  const bytes = Buffer.from(await file.arrayBuffer());
+  const absolutePath = path.join(uploadDir, filename);
+
+  await writeFile(absolutePath, bytes);
+
+  const localPath = `/uploads/vehicles/reports/${filename}`;
+  const prisma = getPrisma();
+  await prisma.mediaAsset.create({
+    data: {
+      filename,
+      localPath,
+      mimeType: "application/pdf",
+      originalName: file.name || filename,
+      publicUrl: getMediaUrl(localPath),
+      size: bytes.length,
+      source: "vehicle-inspection-report",
+      title: path.parse(file.name || filename).name || "Rapport d'inspection",
+    },
+  });
+
+  return localPath;
+}
+
 function toPrismaVehicleBaseData(
   data: ReturnType<typeof vehicleSchema.parse>,
   images: string[],
   videos: string[],
+  inspectionReportUrl: string | null,
 ) {
   return {
     title: data.title,
     slug: data.slug,
     brandId: data.brandId,
-    categoryId: data.categoryId,
+    categoryId: data.categoryId || null,
     model: data.model || null,
     generation: data.generation || null,
     trim: data.trim || null,
@@ -246,6 +341,7 @@ function toPrismaVehicleBaseData(
     description: data.description || null,
     images,
     videos,
+    inspectionReportUrl,
   };
 }
 
@@ -276,6 +372,8 @@ export async function createVehicle(
 
     const imageFiles = getImageFiles(formData);
     const videoFiles = getVideoFiles(formData);
+    const inspectionReportFile = getInspectionReportFile(formData);
+    const existingVideos = normalizeStoredVideos(parsed.data.existingVideos);
 
     if (parsed.data.existingImages.length + imageFiles.length > MAX_VEHICLE_IMAGES) {
       return {
@@ -285,7 +383,7 @@ export async function createVehicle(
       };
     }
 
-    if (parsed.data.existingVideos.length + videoFiles.length > MAX_VEHICLE_VIDEOS) {
+    if (existingVideos.length + videoFiles.length > MAX_VEHICLE_VIDEOS) {
       return {
         ok: false,
         message: `Maximum ${MAX_VEHICLE_VIDEOS} videos autorisees.`,
@@ -295,11 +393,15 @@ export async function createVehicle(
 
     const uploadedImages = await saveImageFiles(imageFiles);
     const uploadedVideos = await saveVideoFiles(videoFiles);
+    const uploadedInspectionReport =
+      await saveInspectionReportFile(inspectionReportFile);
+    const inspectionReportUrl =
+      uploadedInspectionReport || parsed.data.existingInspectionReportUrl || null;
     const images = [...parsed.data.existingImages, ...uploadedImages].slice(
       0,
       MAX_VEHICLE_IMAGES,
     );
-    const videos = [...parsed.data.existingVideos, ...uploadedVideos].slice(
+    const videos = [...existingVideos, ...uploadedVideos].slice(
       0,
       MAX_VEHICLE_VIDEOS,
     );
@@ -308,7 +410,12 @@ export async function createVehicle(
 
     const vehicle = await prisma.vehicle.create({
       data: {
-        ...toPrismaVehicleBaseData(parsed.data, images, videos),
+        ...toPrismaVehicleBaseData(
+          parsed.data,
+          images,
+          videos,
+          inspectionReportUrl,
+        ),
         options: {
           connect: parsed.data.optionIds.map((id) => ({ id })),
         },
@@ -317,6 +424,9 @@ export async function createVehicle(
 
     revalidatePath("/admin/vehicles");
     revalidatePath("/");
+    revalidatePath("/categories");
+    revalidatePath("/marques");
+    revalidateTag("public-brand-links", "max");
     revalidatePath(`/vehicles/${vehicle.slug}`);
 
     return {
@@ -349,6 +459,8 @@ export async function updateVehicle(
 
     const imageFiles = getImageFiles(formData);
     const videoFiles = getVideoFiles(formData);
+    const inspectionReportFile = getInspectionReportFile(formData);
+    const existingVideos = normalizeStoredVideos(parsed.data.existingVideos);
 
     if (parsed.data.existingImages.length + imageFiles.length > MAX_VEHICLE_IMAGES) {
       return {
@@ -358,7 +470,7 @@ export async function updateVehicle(
       };
     }
 
-    if (parsed.data.existingVideos.length + videoFiles.length > MAX_VEHICLE_VIDEOS) {
+    if (existingVideos.length + videoFiles.length > MAX_VEHICLE_VIDEOS) {
       return {
         ok: false,
         message: `Maximum ${MAX_VEHICLE_VIDEOS} videos autorisees.`,
@@ -368,11 +480,15 @@ export async function updateVehicle(
 
     const uploadedImages = await saveImageFiles(imageFiles);
     const uploadedVideos = await saveVideoFiles(videoFiles);
+    const uploadedInspectionReport =
+      await saveInspectionReportFile(inspectionReportFile);
+    const inspectionReportUrl =
+      uploadedInspectionReport || parsed.data.existingInspectionReportUrl || null;
     const images = [...parsed.data.existingImages, ...uploadedImages].slice(
       0,
       MAX_VEHICLE_IMAGES,
     );
-    const videos = [...parsed.data.existingVideos, ...uploadedVideos].slice(
+    const videos = [...existingVideos, ...uploadedVideos].slice(
       0,
       MAX_VEHICLE_VIDEOS,
     );
@@ -386,7 +502,12 @@ export async function updateVehicle(
     await prisma.vehicle.update({
       where: { id },
       data: {
-        ...toPrismaVehicleBaseData(parsed.data, images, videos),
+        ...toPrismaVehicleBaseData(
+          parsed.data,
+          images,
+          videos,
+          inspectionReportUrl,
+        ),
         options: {
           set: parsed.data.optionIds.map((id) => ({ id })),
         },
@@ -396,6 +517,9 @@ export async function updateVehicle(
     revalidatePath("/admin/vehicles");
     revalidatePath(`/admin/vehicles/${id}/edit`);
     revalidatePath("/");
+    revalidatePath("/categories");
+    revalidatePath("/marques");
+    revalidateTag("public-brand-links", "max");
     revalidatePath(`/vehicles/${parsed.data.slug}`);
     if (currentVehicle?.slug && currentVehicle.slug !== parsed.data.slug) {
       revalidatePath(`/vehicles/${currentVehicle.slug}`);
@@ -428,6 +552,9 @@ export async function deleteVehicleAction(formData: FormData) {
 
   revalidatePath("/admin/vehicles");
   revalidatePath("/");
+  revalidatePath("/categories");
+  revalidatePath("/marques");
+  revalidateTag("public-brand-links", "max");
   if (vehicle?.slug) {
     revalidatePath(`/vehicles/${vehicle.slug}`);
   }
@@ -445,6 +572,10 @@ export async function deleteVehiclesAction(formData: FormData) {
   ]);
 
   revalidatePath("/admin/vehicles");
+  revalidatePath("/");
+  revalidatePath("/categories");
+  revalidatePath("/marques");
+  revalidateTag("public-brand-links", "max");
 }
 
 export async function markVehicleAsDraftAction(formData: FormData) {
@@ -461,5 +592,8 @@ export async function markVehicleAsDraftAction(formData: FormData) {
 
   revalidatePath("/admin/vehicles");
   revalidatePath("/");
+  revalidatePath("/categories");
+  revalidatePath("/marques");
+  revalidateTag("public-brand-links", "max");
   revalidatePath(`/vehicles/${vehicle.slug}`);
 }

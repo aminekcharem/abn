@@ -6,9 +6,10 @@ import { ArrowRight, BadgeCheck, CarFront } from "lucide-react";
 import { PublicHeader } from "../_components/public-header";
 import { getMediaUrl } from "@/lib/cdn";
 import { getPrisma } from "@/lib/prisma";
+import { getPublicBrandLinks } from "@/lib/public-navigation";
 import { getShowroomSettings } from "@/lib/settings";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 300;
 
 export const metadata: Metadata = {
   description:
@@ -60,14 +61,15 @@ async function getBrands() {
 }
 
 export default async function BrandsPage() {
-  const [brands, settings] = await Promise.all([
+  const [brands, settings, brandLinks] = await Promise.all([
     getBrands(),
     getShowroomSettings(),
+    getPublicBrandLinks(),
   ]);
 
   return (
     <main className="min-h-screen bg-white text-[#1b1b1b]">
-      <PublicHeader settings={settings} sticky={false} />
+      <PublicHeader brandLinks={brandLinks} settings={settings} sticky={false} />
 
       <section className="px-4 py-12 sm:px-8">
         <div className="mx-auto max-w-7xl">

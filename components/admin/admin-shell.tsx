@@ -21,6 +21,7 @@ const pageTitles: Record<string, string> = {
   "/admin/media": "Media",
   "/admin/options": "Options",
   "/admin/homepage": "Page d'accueil",
+  "/admin/translations": "Translate",
   "/admin/reviews": "Avis",
   "/admin/messages": "Messages",
   "/admin/purchase-requests": "Demandes d'achat",
