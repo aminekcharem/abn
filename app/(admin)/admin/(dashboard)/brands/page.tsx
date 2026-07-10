@@ -12,7 +12,19 @@ import { getPrisma } from "@/lib/prisma";
 
 export const dynamic = "force-dynamic";
 
-async function getBrands() {
+type AdminBrand = {
+  _count: {
+    vehicles: number;
+  };
+  countryOrigin: string | null;
+  id: string;
+  isActive: boolean;
+  logo: string | null;
+  name: string;
+  slug: string;
+};
+
+async function getBrands(): Promise<AdminBrand[]> {
   try {
     const prisma = getPrisma();
 

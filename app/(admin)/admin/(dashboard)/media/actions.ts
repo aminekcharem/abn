@@ -8,6 +8,7 @@ import { z } from "zod";
 import { auth } from "@/auth";
 import { saveMediaFile } from "@/lib/media";
 import { getPrisma } from "@/lib/prisma";
+import { MAX_MEDIA_FILE_SIZE_MB, MAX_MEDIA_FILES } from "./constants";
 
 export type MediaActionState = {
   message: string;
@@ -22,7 +23,6 @@ const mediaAttributesSchema = z.object({
 });
 
 const uploadAttributesSchema = mediaAttributesSchema.omit({ id: true });
-const MAX_MEDIA_FILES = 100;
 
 async function ensureAdmin() {
   const session = await auth();
@@ -74,7 +74,7 @@ export async function uploadMediaAssets(
         alt: attributes.alt,
         caption: attributes.caption,
         directory: "media",
-        maxSizeMb: 10,
+        maxSizeMb: MAX_MEDIA_FILE_SIZE_MB,
         source: "media-library",
         title: attributes.title,
       });
