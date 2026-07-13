@@ -13,6 +13,11 @@ import { auth } from "@/auth";
 import { getMediaUrl } from "@/lib/cdn";
 import { getPrisma } from "@/lib/prisma";
 import { getPublicBrandLinks } from "@/lib/public-navigation";
+import {
+  getVehicleStatusBadgeClassName,
+  getVehicleStatusLabel,
+  type PublicVehicleStatus,
+} from "@/lib/public-vehicle-status";
 import { getShowroomSettings } from "@/lib/settings";
 import { PublicHeader } from "../../_components/public-header";
 import { VehicleGallery } from "./vehicle-gallery";
@@ -22,13 +27,6 @@ export const dynamic = "force-dynamic";
 type VehiclePageProps = {
   params: Promise<{ slug: string }>;
 };
-
-const statusLabels = {
-  BROUILLON: "Brouillon",
-  DISPONIBLE: "Disponible",
-  RESERVE: "Réservé",
-  VENDU: "Vendu",
-} as const;
 
 function getImages(images: Prisma.JsonValue) {
   if (!Array.isArray(images)) return [];
@@ -344,13 +342,12 @@ export default async function VehicleDetailsPage({
             <VehicleGallery
               badges={[
                 {
-                  label: statusLabels[vehicle.status as keyof typeof statusLabels],
-                  tone: "yellow",
+                  className: getVehicleStatusBadgeClassName(
+                    vehicle.status as PublicVehicleStatus,
+                  ),
+                  label: getVehicleStatusLabel(vehicle.status as PublicVehicleStatus),
                 },
                 ...(vehicle.isNew ? [{ label: "Nouveau", tone: "light" as const }] : []),
-                ...(vehicle.isFeatured
-                  ? [{ label: "Sélection", tone: "dark" as const }]
-                  : []),
               ]}
               images={galleryImages}
               title={vehicle.title}

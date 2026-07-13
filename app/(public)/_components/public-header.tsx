@@ -69,16 +69,20 @@ export function PublicHeader({
   const navClassName =
     "hidden items-center gap-7 text-sm font-semibold text-white/78 lg:flex";
   const mobileLinks = brandLinks.length
-    ? navLinks.flatMap(([label, href]) =>
+    ? navLinks.map(([label, href]) =>
         label === "Marques"
-          ? [
-              { href, label },
-              ...brandLinks.map((brand) => ({
-                href: brand.href,
-                label: `Marques - ${brand.label}`,
-              })),
-            ]
-          : [{ href, label }],
+          ? {
+              children: [
+                { href, label: "Toutes les marques" },
+                ...brandLinks.map((brand) => ({
+                  href: brand.href,
+                  label: brand.label,
+                })),
+              ],
+              href,
+              label,
+            }
+          : { href, label },
       )
     : mobileNavLinks;
 

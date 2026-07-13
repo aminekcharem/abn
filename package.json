@@ -8,6 +8,7 @@
     "start": "node .next/standalone/server.js",
     "deploy:standalone": "bash deploy.sh",
     "lint": "eslint",
+    "postinstall": "prisma generate",
     "prisma:generate": "prisma generate",
     "prisma:migrate": "prisma migrate dev",
     "prisma:seed": "node prisma/seed.mjs"

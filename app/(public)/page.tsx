@@ -3,25 +3,12 @@ import Link from "next/link";
 import { Prisma } from "@prisma/client";
 import {
   ArrowUpRight,
-  BadgeCheck,
-  Calendar,
-  Car,
-  CarFront,
   ChevronDown,
-  CircleDollarSign,
-  Fuel,
-  Gauge,
   Mail,
   MapPin,
   Phone,
-  ShieldCheck,
-  Ship,
-  Sparkles,
   Star,
-  Truck,
-  Wrench,
 } from "lucide-react";
-import type { LucideIcon } from "lucide-react";
 
 import {
   HomeInventorySearch,
@@ -60,6 +47,7 @@ type HomeBrand = {
 type HomeVehicle = {
   brand: { name: string };
   category: { name: string; slug: string } | null;
+  createdAt?: Date | string;
   fuelType: "ESSENCE" | "DIESEL" | "HYBRIDE" | "ELECTRIQUE" | null;
   id: string;
   images: Prisma.JsonValue;
@@ -228,41 +216,24 @@ const homeNavLinks = [
   { href: "/#contact", label: "Contact" },
 ];
 
-const services: Array<[LucideIcon, string, string]> = [
+const services: Array<[string, string]> = [
   [
-    CircleDollarSign,
     "Sourcing en Corée",
     "Accès au marché coréen et sélection des véhicules adaptés à votre demande.",
   ],
   [
-    ShieldCheck,
     "Inspection et rapport",
     "Contrôle des informations, photos, kilométrage et statut avant la réservation.",
   ],
   [
-    BadgeCheck,
     "Documentation export",
     "Facture, documents de vente et suivi administratif regroupés au même endroit.",
   ],
   [
-    Ship,
     "Expédition maritime",
     "Organisation du départ depuis Busan vers Radès, Le Havre et d'autres ports.",
   ],
 ];
-
-const iconMap: Record<string, LucideIcon> = {
-  "badge-check": BadgeCheck,
-  "car-front": CarFront,
-  car: Car,
-  gauge: Gauge,
-  mountain: Truck,
-  sparkles: Sparkles,
-  suv: Truck,
-  truck: Truck,
-  users: Car,
-  wagon: CarFront,
-};
 
 function getImages(images: Prisma.JsonValue) {
   if (!Array.isArray(images)) return [];
@@ -276,10 +247,6 @@ function formatPrice(price: Prisma.Decimal | number, currency: "TND" | "EUR") {
     maximumFractionDigits: 0,
     style: "currency",
   }).format(Number(price));
-}
-
-function formatNumber(value: number) {
-  return new Intl.NumberFormat("fr-FR").format(value);
 }
 
 function formatFuel(value: HomeVehicle["fuelType"]) {
@@ -300,14 +267,6 @@ function formatTransmission(value: HomeVehicle["transmission"]) {
   if (value !== "AUTOMATIQUE" && value !== "MANUELLE") return value;
 
   return value === "AUTOMATIQUE" ? "Automatique" : "Manuelle";
-}
-
-function vehicleBadge(vehicle: HomeVehicle) {
-  if (vehicle.status === "VENDU") return "Vendu";
-  if (vehicle.status === "RESERVE") return "Réservé";
-  if (vehicle.isNew) return "Disponible";
-
-  return "Disponible";
 }
 
 function vehicleImage(vehicle: HomeVehicle) {
@@ -334,7 +293,6 @@ function phoneHref(phone: string) {
 
 function toInventoryVehicle(vehicle: HomeVehicle): HomeInventoryVehicle {
   return {
-    badge: vehicleBadge(vehicle),
     brandName: vehicle.brand.name,
     categoryName: vehicle.category?.name || "Non classé",
     categorySlug: vehicle.category?.slug || "",
@@ -347,10 +305,15 @@ function toInventoryVehicle(vehicle: HomeVehicle): HomeInventoryVehicle {
     price: Number(vehicle.price),
     priceLabel: formatPrice(vehicle.price, vehicle.priceCurrency),
     slug: vehicle.slug,
+    status: vehicle.status,
     title: vehicle.title,
     transmission: formatTransmission(vehicle.transmission),
     year: vehicle.year,
   };
+}
+
+function getVehicleCreatedAtTime(vehicle: HomeVehicle) {
+  return vehicle.createdAt ? new Date(vehicle.createdAt).getTime() : 0;
 }
 
 async function getHomepageData() {
@@ -382,6 +345,7 @@ async function getHomepageData() {
         select: {
           brand: { select: { name: true } },
           category: { select: { name: true, slug: true } },
+          createdAt: true,
           fuelType: true,
           id: true,
           images: true,
@@ -454,9 +418,10 @@ async function getHomepageData() {
 export default async function Home() {
   const { brandLinks, brands, homepageSettings, reviews, settings, vehicles } =
     await getHomepageData();
-  const specialVehicles = vehicles.filter((vehicle) => vehicle.isFeatured).slice(0, 6);
-  const displaySpecials = specialVehicles.length ? specialVehicles : vehicles.slice(0, 3);
-  const inventoryVehicles = vehicles.map(toInventoryVehicle);
+  const inventoryVehicles = [...vehicles]
+    .sort((first, second) => getVehicleCreatedAtTime(second) - getVehicleCreatedAtTime(first))
+    .slice(0, 9)
+    .map(toInventoryVehicle);
 
   return (
     <main className="min-h-screen bg-[#f7f7f5] text-[#14181d]">
@@ -515,27 +480,19 @@ export default async function Home() {
         <div className="mx-auto max-w-6xl">
           <SectionHead dark title={homepageSettings.whyChooseUsTitle || "Pourquoi choisir AUTO PRO ?"} />
           <div className="grid gap-5 md:grid-cols-2 lg:grid-cols-4">
-            {services.map(([Icon, title, text], index) => (
+            {services.map(([title, text], index) => (
               <article
                 className="rounded-[10px] border border-white/10 bg-[#1f2630] p-6"
                 key={title}
               >
-                <div className="mb-4 font-mono text-xs font-semibold tracking-[0.18em] text-[#f2a414]">
+                <div className="mb-4 font-mono text-[15px] font-semibold tracking-[0.18em] text-[#f2a414]">
                   {String(index + 1).padStart(2, "0")}
                 </div>
-                <Icon className="mb-5 h-8 w-8 text-[#f2a414]" />
                 <h3 className="text-lg font-semibold uppercase tracking-normal">{title}</h3>
                 <p className="mt-3 text-sm leading-7 text-white/70">{homepageSettings.whyChooseUsItems[index]?.text || text}</p>
               </article>
             ))}
           </div>
-        </div>
-      </section>
-
-      <section className="px-5 py-14">
-        <div className="mx-auto max-w-6xl">
-          <SectionHead count={`${displaySpecials.length} sélection(s)`} title="Offres spéciales" />
-          <VehicleGrid compact vehicles={displaySpecials} />
         </div>
       </section>
 
@@ -612,16 +569,20 @@ function HomeHeader({
 }) {
   const logoUrl = settings.websiteLogoUrl || settings.logoUrl;
   const mobileLinks = brandLinks.length
-    ? homeNavLinks.flatMap((link) =>
+    ? homeNavLinks.map((link) =>
         link.label === "Marques"
-          ? [
-              link,
-              ...brandLinks.map((brand) => ({
-                href: brand.href,
-                label: `Marques - ${brand.label}`,
-              })),
-            ]
-          : [link],
+          ? {
+              children: [
+                { href: link.href, label: "Toutes les marques" },
+                ...brandLinks.map((brand) => ({
+                  href: brand.href,
+                  label: brand.label,
+                })),
+              ],
+              href: link.href,
+              label: link.label,
+            }
+          : link,
       )
     : homeNavLinks;
 
@@ -739,97 +700,6 @@ function SectionHead({
         <span className={`mx-0 mt-2 block h-0.5 w-14 bg-[#f2a414] ${centered ? "mx-auto" : ""}`} />
       </h2>
       {count ? <span className="font-mono text-xs text-[#5b6470]">{count}</span> : null}
-    </div>
-  );
-}
-
-function VehicleGrid({
-  compact,
-  vehicles,
-}: {
-  compact?: boolean;
-  vehicles: HomeVehicle[];
-}) {
-  return (
-    <div className={`grid gap-5 ${compact ? "md:grid-cols-3" : "md:grid-cols-2 lg:grid-cols-3"}`}>
-      {vehicles.map((vehicle) => {
-        const image = vehicleImage(vehicle);
-        const Icon = iconMap[vehicle.category?.slug || "car"] ?? Car;
-
-        return (
-          <article
-            className="flex overflow-hidden rounded-[10px] bg-white shadow-[0_6px_24px_rgba(20,24,29,0.08)] transition hover:-translate-y-1"
-            key={vehicle.id}
-          >
-            <Link className="flex w-full flex-col" href={`/vehicles/${vehicle.slug}`}>
-              <div className="relative aspect-[4/3] overflow-hidden bg-[#1f2630]">
-                {image ? (
-                  <Image
-                    alt={vehicle.title}
-                    className="object-cover transition duration-300 hover:scale-105"
-                    fill
-                    sizes={compact ? "(max-width: 900px) 100vw, 33vw" : "(max-width: 900px) 100vw, 33vw"}
-                    src={getMediaUrl(image)}
-                  />
-                ) : (
-                  <div className="flex h-full flex-col items-center justify-center gap-2 bg-[linear-gradient(150deg,#232b36,#161b22)] text-white/45">
-                    <Icon className="h-12 w-12" />
-                    <small className="font-mono text-xs uppercase tracking-[0.18em]">
-                      {vehicle.brand.name}
-                    </small>
-                  </div>
-                )}
-                <span className="absolute left-3 top-3 rounded-md bg-[#1f7a3d] px-3 py-1 text-[11px] font-bold uppercase tracking-[0.08em] text-white">
-                  {vehicleBadge(vehicle)}
-                </span>
-                {vehicle.isFeatured ? (
-                  <span className="absolute right-3 top-3 rounded-md bg-black/55 px-3 py-1 text-[11px] font-semibold text-white">
-                    Rapport
-                  </span>
-                ) : null}
-              </div>
-              <div className="flex flex-1 flex-col gap-3 p-5">
-                <h3 className="min-h-11 text-base font-semibold leading-snug">{vehicle.title}</h3>
-                <div className="flex flex-wrap gap-3 text-xs text-[#5b6470]">
-                  {vehicle.mileage !== null ? (
-                    <span className="inline-flex items-center gap-1.5">
-                      <Gauge className="h-3.5 w-3.5" />
-                      {formatNumber(vehicle.mileage)} km
-                    </span>
-                  ) : null}
-                  {formatFuel(vehicle.fuelType) ? (
-                    <span className="inline-flex items-center gap-1.5">
-                      <Fuel className="h-3.5 w-3.5" />
-                      {formatFuel(vehicle.fuelType)}
-                    </span>
-                  ) : null}
-                  {formatTransmission(vehicle.transmission) ? (
-                    <span className="inline-flex items-center gap-1.5">
-                      <Wrench className="h-3.5 w-3.5" />
-                      {formatTransmission(vehicle.transmission)}
-                    </span>
-                  ) : null}
-                  {vehicle.year ? (
-                    <span className="inline-flex items-center gap-1.5">
-                      <Calendar className="h-3.5 w-3.5" />
-                      {vehicle.year}
-                    </span>
-                  ) : null}
-                </div>
-                <div className="mt-auto flex items-center justify-between gap-3 border-t border-[#e3e4e1] pt-4">
-                  <div>
-                    <span className="text-xl font-semibold">{formatPrice(vehicle.price, vehicle.priceCurrency)}</span>
-                    <div className="text-[11px] text-[#5b6470]">Hors frais de transport</div>
-                  </div>
-                  <span className="rounded-md bg-[#14181d] px-4 py-2 text-xs font-semibold text-white transition group-hover:bg-[#f2a414] group-hover:text-[#14181d]">
-                    Voir détails
-                  </span>
-                </div>
-              </div>
-            </Link>
-          </article>
-        );
-      })}
     </div>
   );
 }

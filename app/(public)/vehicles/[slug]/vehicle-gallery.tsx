@@ -15,8 +15,9 @@ type GalleryVideo = {
 };
 
 type GalleryBadge = {
+  className?: string;
   label: string;
-  tone: "dark" | "light" | "yellow";
+  tone?: "dark" | "light" | "yellow";
 };
 
 type VehicleGalleryProps = {
@@ -146,7 +147,10 @@ export function VehicleGallery({
         <div className="absolute left-5 top-5 flex flex-wrap gap-2">
           {badges.map((badge) => (
             <span
-              className={`rounded-full px-4 py-2 text-xs font-semibold ${badgeStyles[badge.tone]}`}
+              className={
+                badge.className ??
+                `rounded-full px-4 py-2 text-xs font-semibold ${badgeStyles[badge.tone ?? "dark"]}`
+              }
               key={badge.label}
             >
               {badge.label}

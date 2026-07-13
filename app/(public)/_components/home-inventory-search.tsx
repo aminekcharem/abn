@@ -6,9 +6,13 @@ import { Calendar, Car, Fuel, Gauge, Wrench } from "lucide-react";
 import { useCallback, useMemo, useState } from "react";
 
 import { getMediaUrl } from "@/lib/cdn";
+import {
+  getVehicleStatusBadgeClassName,
+  getVehicleStatusLabel,
+  type PublicVehicleStatus,
+} from "@/lib/public-vehicle-status";
 
 export type HomeInventoryVehicle = {
-  badge: string;
   brandName: string;
   categoryName: string;
   categorySlug: string;
@@ -21,6 +25,7 @@ export type HomeInventoryVehicle = {
   price: number;
   priceLabel: string;
   slug: string;
+  status: PublicVehicleStatus;
   title: string;
   transmission: string | null;
   year: number | null;
@@ -310,6 +315,8 @@ function RangeFilter({
   const span = Math.max(bounds.max - bounds.min, 1);
   const left = ((value.min - bounds.min) / span) * 100;
   const right = 100 - ((value.max - bounds.min) / span) * 100;
+  const rangeInputClassName =
+    "pointer-events-none absolute top-0 h-7 w-full appearance-none bg-transparent accent-[#14181d] [&::-moz-range-thumb]:pointer-events-auto [&::-webkit-slider-thumb]:pointer-events-auto";
 
   function updateMin(nextValue: number) {
     onChange({ ...value, min: Math.min(nextValue, value.max) });
@@ -342,7 +349,7 @@ function RangeFilter({
         />
         <input
           aria-label={`${label} minimum`}
-          className="absolute top-0 z-20 h-7 w-full appearance-none bg-transparent accent-[#14181d]"
+          className={`${rangeInputClassName} z-20`}
           disabled={disabled}
           max={bounds.max}
           min={bounds.min}
@@ -352,7 +359,7 @@ function RangeFilter({
         />
         <input
           aria-label={`${label} maximum`}
-          className="absolute top-0 z-10 h-7 w-full appearance-none bg-transparent accent-[#14181d]"
+          className={`${rangeInputClassName} z-10`}
           disabled={disabled}
           max={bounds.max}
           min={bounds.min}
@@ -396,8 +403,8 @@ function VehicleCard({ vehicle }: { vehicle: HomeInventoryVehicle }) {
               </small>
             </div>
           )}
-          <span className="absolute left-3 top-3 rounded-md bg-[#1f7a3d] px-3 py-1 text-[11px] font-bold uppercase tracking-[0.08em] text-white">
-            {vehicle.badge}
+          <span className={`absolute left-3 top-3 ${getVehicleStatusBadgeClassName(vehicle.status)}`}>
+            {getVehicleStatusLabel(vehicle.status)}
           </span>
           {vehicle.isFeatured ? (
             <span className="absolute right-3 top-3 rounded-md bg-black/55 px-3 py-1 text-[11px] font-semibold text-white">

@@ -73,7 +73,7 @@ export default async function BrandsPage() {
 
       <section className="px-4 py-12 sm:px-8">
         <div className="mx-auto max-w-7xl">
-          <div className="flex flex-wrap items-end justify-between gap-5">
+          <div>
             <div>
               <p className="text-sm font-semibold uppercase text-[#1b1b1b]/45">
                 Marques
@@ -81,17 +81,7 @@ export default async function BrandsPage() {
               <h1 className="mt-3 text-3xl font-semibold leading-tight sm:text-5xl">
                 Toutes les marques disponibles
               </h1>
-              <p className="mt-4 max-w-2xl text-sm leading-7 text-[#1b1b1b]/62">
-                Retrouvez uniquement les marques qui ont des véhicules publiés
-                dans le showroom.
-              </p>
             </div>
-            <Link
-              className="inline-flex rounded-full bg-[#1b1b1b] px-5 py-3 text-sm font-semibold text-white transition hover:bg-[#ffc10a] hover:text-[#1b1b1b]"
-              href="/#inventory"
-            >
-              Voir les véhicules
-            </Link>
           </div>
 
           {brands.length ? (
@@ -123,37 +113,37 @@ function BrandTile({ brand }: { brand: BrandCard }) {
 
   return (
     <Link
-      className="group flex min-h-72 flex-col rounded-md border border-[#1b1b1b]/10 bg-white p-5 shadow-sm transition hover:-translate-y-1 hover:shadow-xl hover:shadow-[#1b1b1b]/10"
+      className="group flex min-h-60 flex-col rounded-md border border-[#e3e4e1] bg-[#f8f8f6] p-4 shadow-sm transition hover:-translate-y-1 hover:border-[#f2a414] hover:bg-white hover:shadow-[0_18px_45px_rgba(20,24,29,0.08)]"
       href={`/marques/${brand.slug}`}
     >
-      <div className="grid aspect-[4/3] place-items-center rounded-md bg-[#f4f4f1] p-8">
+      <div className="grid h-28 place-items-center rounded-md border border-[#e3e4e1] bg-white px-6 py-4">
         {brand.logo ? (
           <Image
             alt={brand.name}
-            className="max-h-24 w-full object-contain transition duration-300 group-hover:scale-105"
-            height={120}
+            className="max-h-16 w-full object-contain transition duration-300 group-hover:scale-105"
+            height={80}
             src={getMediaUrl(brand.logo)}
-            width={180}
+            width={160}
           />
         ) : (
-          <span className="grid h-20 w-20 place-items-center rounded-full bg-white text-[#1b1b1b] shadow-sm">
-            <CarFront className="h-9 w-9" />
+          <span className="grid h-14 w-14 place-items-center rounded-full bg-[#f8f8f6] text-[#1b1b1b] ring-1 ring-[#e3e4e1]">
+            <CarFront className="h-7 w-7" />
           </span>
         )}
       </div>
 
-      <div className="mt-5 flex flex-1 flex-col">
-        <p className="text-xl font-semibold">{brand.name}</p>
+      <div className="mt-4 flex flex-1 flex-col">
+        <p className="text-lg font-semibold">{brand.name}</p>
         {brand.countryOrigin ? (
           <p className="mt-1 text-sm text-[#1b1b1b]/50">
             {brand.countryOrigin}
           </p>
         ) : null}
-        <div className="mt-auto flex items-center justify-between gap-3 pt-6">
+        <div className="mt-auto flex items-center justify-between gap-3 pt-5">
           <p className="text-xs font-semibold uppercase text-[#1b1b1b]/45">
             {brand._count.vehicles} {vehicleLabel}
           </p>
-          <span className="grid h-9 w-9 place-items-center rounded-full bg-[#1b1b1b] text-white transition group-hover:bg-[#ffc10a] group-hover:text-[#1b1b1b]">
+          <span className="grid h-9 w-9 place-items-center rounded-full bg-white text-[#1b1b1b] ring-1 ring-[#e3e4e1] transition group-hover:bg-[#1b1b1b] group-hover:text-white group-hover:ring-[#1b1b1b]">
             <ArrowRight className="h-4 w-4" />
           </span>
         </div>
