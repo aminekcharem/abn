@@ -32,7 +32,18 @@ import {
   type VehicleActionState,
 } from "@/lib/validations/vehicle";
 import { cn } from "@/lib/utils";
+function createClientId(): string {
+  if (typeof globalThis.crypto?.randomUUID === "function") {
+    return globalThis.crypto.randomUUID();
+  }
 
+  const bytes = new Uint8Array(16);
+  globalThis.crypto.getRandomValues(bytes);
+
+  return Array.from(bytes, (byte) =>
+    byte.toString(16).padStart(2, "0")
+  ).join("");
+}
 type SelectOption = {
   id: string;
   name: string;
@@ -334,7 +345,7 @@ export function VehicleForm({
     setImages((current) => [
       ...current,
       ...nextFiles.map((file) => ({
-        key: `new-${crypto.randomUUID()}`,
+        key: `new-${createClientId()}`,
         type: "new" as const,
         file,
         url: URL.createObjectURL(file),
@@ -381,7 +392,7 @@ export function VehicleForm({
     setVideos((current) => [
       ...current,
       ...nextFiles.map((file) => ({
-        key: `new-video-${crypto.randomUUID()}`,
+        key: `new-video-${createClientId()}`,
         type: "new" as const,
         file,
         url: URL.createObjectURL(file),
@@ -414,7 +425,7 @@ export function VehicleForm({
       return [
         ...current,
         {
-          key: `youtube-video-${crypto.randomUUID()}`,
+          key: `youtube-video-${createClientId()}`,
           type: "existing" as const,
           url: cleanUrl,
         },
