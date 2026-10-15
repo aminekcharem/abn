@@ -5,7 +5,6 @@ import {
   VehicleForm,
   type VehicleFormInitialData,
   type VehicleMediaLibraryAsset,
-  type VehicleReportLibraryAsset,
 } from "../../vehicle-form";
 import { getPrisma } from "@/lib/prisma";
 
@@ -89,20 +88,6 @@ async function getEditData(id: string) {
         },
       },
     });
-    const reportAssets = await prisma.mediaAsset.findMany({
-      orderBy: { createdAt: "desc" },
-      select: {
-        id: true,
-        localPath: true,
-        originalName: true,
-        title: true,
-      },
-      take: 80,
-      where: {
-        mimeType: "application/pdf",
-      },
-    });
-
     const color = parseColor(vehicle.color);
 
     const initialData: VehicleFormInitialData = {
@@ -118,9 +103,6 @@ async function getEditData(id: string) {
       motorization: vehicle.motorization || "",
       price: String(vehicle.price),
       priceCurrency: vehicle.priceCurrency,
-      transportIncluded: vehicle.transportIncluded,
-      transportPrice: vehicle.transportPrice ? String(vehicle.transportPrice) : "",
-      transportCurrency: vehicle.transportCurrency,
       year: vehicle.year ? String(vehicle.year) : "",
       firstRegistrationDate: formatDateInput(vehicle.firstRegistrationDate),
       status: vehicle.status,
@@ -142,7 +124,6 @@ async function getEditData(id: string) {
       optionIds: vehicle.options.map((option) => option.id),
       images: getImages(vehicle.images),
       videos: getVideos(vehicle.videos),
-      inspectionReportUrl: vehicle.inspectionReportUrl || "",
       description: vehicle.description || "",
     };
 
@@ -153,7 +134,6 @@ async function getEditData(id: string) {
       initialData,
       mediaAssets: mediaAssets as VehicleMediaLibraryAsset[],
       options,
-      reportAssets: reportAssets as VehicleReportLibraryAsset[],
     };
   } catch {
     return {
@@ -163,7 +143,6 @@ async function getEditData(id: string) {
       initialData: null,
       mediaAssets: [],
       options: [],
-      reportAssets: [],
     };
   }
 }
@@ -174,7 +153,7 @@ export default async function EditVehiclePage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  const { brands, categories, hasDatabaseError, initialData, mediaAssets, options, reportAssets } =
+  const { brands, categories, hasDatabaseError, initialData, mediaAssets, options } =
     await getEditData(id);
 
   if (!initialData && !hasDatabaseError) {
@@ -192,7 +171,7 @@ export default async function EditVehiclePage({
             Impossible de charger cette fiche pour le moment.
           </p>
         </div>
-        <div className="rounded-md border border-orange-500/30 bg-orange-500/10 px-4 py-3 text-sm text-orange-100">
+        <div className="rounded-md border border-[#a21d2f]/30 bg-[#a21d2f]/10 px-4 py-3 text-sm text-[#a21d2f]">
           Connexion MySQL indisponible. Demarrez MySQL puis verifiez les
           migrations avant de modifier ce vehicule.
         </div>
@@ -218,7 +197,6 @@ export default async function EditVehiclePage({
         mediaAssets={mediaAssets}
         mode="edit"
         options={options}
-        reportAssets={reportAssets}
       />
     </div>
   );

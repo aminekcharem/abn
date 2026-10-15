@@ -47,7 +47,7 @@ export default function VehicleSearch() {
         <SearchSelect label="Prix" value={price} options={prices} onChange={setPrice} />
         <button
           type="button"
-          className="rounded-full bg-[#ffc10a] px-7 py-4 text-sm font-semibold text-[#1b1b1b] transition hover:bg-[#1b1b1b] hover:text-white"
+          className="rounded-full bg-[#a21d2f] px-7 py-4 text-sm font-semibold text-white transition hover:bg-[#1b1b1b]"
         >
           Rechercher {resultCount} véhicules
         </button>
@@ -58,8 +58,8 @@ export default function VehicleSearch() {
         <div className="flex flex-wrap gap-2">
           {bodyTypes.map((type) => (
             <a
-              href="#inventory"
-              className="rounded-full border border-[#1b1b1b]/10 px-4 py-2 font-semibold text-[#1b1b1b]/68 transition hover:border-[#ffc10a]/60 hover:text-[#1b1b1b]"
+              href="#vehicules"
+              className="rounded-full border border-[#1b1b1b]/10 px-4 py-2 font-semibold text-[#1b1b1b]/68 transition hover:border-[#a21d2f]/60 hover:text-[#1b1b1b]"
               key={type}
             >
               {type}

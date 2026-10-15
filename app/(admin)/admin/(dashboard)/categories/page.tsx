@@ -100,7 +100,7 @@ export default async function AdminCategoriesPage() {
                   <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_420px]">
                     <div>
                       <div className="flex items-start gap-3">
-                        <span className="grid h-12 w-12 shrink-0 place-items-center overflow-hidden rounded-md border border-[#ffc10a]/30 bg-[#ffc10a]/10 text-[#ffc10a]">
+                        <span className="grid h-12 w-12 shrink-0 place-items-center overflow-hidden rounded-md border border-[#a21d2f]/30 bg-[#a21d2f]/10 text-[#a21d2f]">
                           {category.image ? (
                             <Image
                               alt=""
@@ -122,7 +122,7 @@ export default async function AdminCategoriesPage() {
                             <Badge
                               className={
                                 category.isActive
-                                  ? "border-[#ffc10a]/40 bg-[#ffc10a]/10 text-[#ffc10a]"
+                                  ? "border-[#a21d2f]/40 bg-[#a21d2f]/10 text-[#a21d2f]"
                                   : "border-zinc-700 bg-zinc-800 text-zinc-400"
                               }
                               variant="outline"
@@ -158,12 +158,12 @@ export default async function AdminCategoriesPage() {
                         <input name="id" type="hidden" value={category.id} />
                         <input
                           accept="image/svg+xml,image/png,image/jpeg,image/webp"
-                          className="rounded-md border border-zinc-800 bg-zinc-950 px-3 py-2 text-xs text-zinc-100 file:mr-3 file:rounded-md file:border-0 file:bg-[#ffc10a] file:px-3 file:py-1.5 file:text-xs file:font-semibold file:text-[#050b20]"
+                          className="rounded-md border border-zinc-800 bg-zinc-950 px-3 py-2 text-xs text-zinc-100 file:mr-3 file:rounded-md file:border-0 file:bg-[#a21d2f] file:px-3 file:py-1.5 file:text-xs file:font-semibold file:text-white"
                           name="visual"
                           type="file"
                         />
                         <button
-                          className="rounded-md bg-[#ffc10a] px-4 py-2 text-sm font-semibold text-[#050b20] transition hover:bg-[#050b20] hover:text-white"
+                          className="rounded-md bg-[#a21d2f] px-4 py-2 text-sm font-semibold text-white transition hover:bg-[#050b20] hover:text-white"
                           type="submit"
                         >
                           Remplacer visuel
@@ -249,7 +249,7 @@ export default async function AdminCategoriesPage() {
                           Page categories
                         </label>
                         <button
-                          className="rounded-md bg-[#ffc10a] px-4 py-2 text-sm font-semibold text-[#050b20] transition hover:bg-[#050b20] hover:text-white"
+                          className="rounded-md bg-[#a21d2f] px-4 py-2 text-sm font-semibold text-white transition hover:bg-[#050b20] hover:text-white"
                           type="submit"
                         >
                           Enregistrer categorie
@@ -271,7 +271,7 @@ export default async function AdminCategoriesPage() {
                       type="hidden"
                       value={category.isActive ? "false" : "true"}
                     />
-                    <button className="text-sm font-semibold text-[#ffc10a] transition hover:text-white" type="submit">
+                    <button className="text-sm font-semibold text-[#a21d2f] transition hover:text-white" type="submit">
                       {category.isActive ? "Desactiver" : "Activer"} rapidement
                     </button>
                   </form>
@@ -295,3 +295,4 @@ const inputClass =
   "h-10 rounded-md border border-zinc-800 bg-zinc-950 px-3 text-sm text-zinc-100 outline-none ring-primary/30 transition focus:ring-4";
 
 const labelClass = "grid gap-2 text-sm font-medium text-zinc-200";
+

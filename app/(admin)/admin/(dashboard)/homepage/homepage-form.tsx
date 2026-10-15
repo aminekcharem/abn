@@ -105,7 +105,7 @@ export function HomepageForm({
 
       <Panel
         description="Selectionnez 1 a 5 vehicules. Chaque slide peut utiliser une image differente de la galerie Media ou un upload."
-        icon={<Car className="h-4 w-4 text-[#ffc10a]" />}
+        icon={<Car className="h-4 w-4 text-[#a21d2f]" />}
         title="Hero"
       >
         {state.fieldErrors?.heroSlides ? (
@@ -139,7 +139,7 @@ export function HomepageForm({
 
       <Panel
         description="Ce titre est rendu en h1 sous le hero, avec le paragraphe dessous."
-        icon={<BadgeCheck className="h-4 w-4 text-[#ffc10a]" />}
+        icon={<BadgeCheck className="h-4 w-4 text-[#a21d2f]" />}
         title="A propos"
       >
         <div className="grid gap-4 lg:grid-cols-[0.8fr_1.2fr]">
@@ -171,7 +171,7 @@ export function HomepageForm({
 
       <Panel
         description="Cochez les types a afficher et indiquez leur ordre sur la home."
-        icon={<Images className="h-4 w-4 text-[#ffc10a]" />}
+        icon={<Images className="h-4 w-4 text-[#a21d2f]" />}
         title="Types de vehicules"
       >
         <OrderedCheckboxList
@@ -190,7 +190,7 @@ export function HomepageForm({
 
       <Panel
         description="Cochez les vehicules a la une a afficher dans la grille principale."
-        icon={<Star className="h-4 w-4 text-[#ffc10a]" />}
+        icon={<Star className="h-4 w-4 text-[#a21d2f]" />}
         title="Vehicules a la une"
       >
         <OrderedCheckboxList
@@ -209,7 +209,7 @@ export function HomepageForm({
 
       <Panel
         description="Cette voiture s'affiche dans le bloc large entre la grille principale et Pourquoi nous choisir."
-        icon={<Car className="h-4 w-4 text-[#ffc10a]" />}
+        icon={<Car className="h-4 w-4 text-[#a21d2f]" />}
         title="Voiture mise en avant"
       >
         <div className="grid gap-4 lg:grid-cols-3">
@@ -256,7 +256,7 @@ export function HomepageForm({
 
       <Panel
         description="Modifie les cartes Pourquoi nous choisir de la partie front."
-        icon={<BadgeCheck className="h-4 w-4 text-[#ffc10a]" />}
+        icon={<BadgeCheck className="h-4 w-4 text-[#a21d2f]" />}
         title="Pourquoi nous choisir"
       >
         <FieldError errors={state.fieldErrors?.whyChooseUsTitle}>
@@ -315,9 +315,9 @@ export function HomepageForm({
         description="Active ou desactive l'affichage du bloc avis clients sur la page d'accueil."
         icon={
           settings.showReviews ? (
-            <Eye className="h-4 w-4 text-[#ffc10a]" />
+            <Eye className="h-4 w-4 text-[#a21d2f]" />
           ) : (
-            <EyeOff className="h-4 w-4 text-[#ffc10a]" />
+            <EyeOff className="h-4 w-4 text-[#a21d2f]" />
           )
         }
         title="Avis"
@@ -352,9 +352,9 @@ export function HomepageForm({
         description="Ajoutez les questions frequentes et choisissez si le bloc FAQ s'affiche sur la home."
         icon={
           settings.showFaqs ? (
-            <HelpCircle className="h-4 w-4 text-[#ffc10a]" />
+            <HelpCircle className="h-4 w-4 text-[#a21d2f]" />
           ) : (
-            <EyeOff className="h-4 w-4 text-[#ffc10a]" />
+            <EyeOff className="h-4 w-4 text-[#a21d2f]" />
           )
         }
         title="FAQ"
@@ -623,7 +623,7 @@ function MediaPicker({
           {items.length ? (
             <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
               <button
-                className="flex min-h-28 cursor-pointer items-center gap-3 rounded-md border border-zinc-800 bg-black px-3 py-2 text-left text-xs text-zinc-300 transition hover:border-[#ffc10a]/60"
+                className="flex min-h-28 cursor-pointer items-center gap-3 rounded-md border border-zinc-800 bg-black px-3 py-2 text-left text-xs text-zinc-300 transition hover:border-[#a21d2f]/60"
                 onClick={() => {
                   onSelect(null);
                   setIsOpen(false);
@@ -644,7 +644,7 @@ function MediaPicker({
               </button>
               {items.map((asset) => (
                 <button
-                  className="grid cursor-pointer grid-cols-[72px_1fr] items-center gap-3 rounded-md border border-zinc-800 bg-black p-3 text-left text-xs text-zinc-300 transition hover:border-[#ffc10a]/60"
+                  className="grid cursor-pointer grid-cols-[72px_1fr] items-center gap-3 rounded-md border border-zinc-800 bg-black p-3 text-left text-xs text-zinc-300 transition hover:border-[#a21d2f]/60"
                   key={asset.id}
                   onClick={() => {
                     onSelect(asset);
@@ -825,6 +825,7 @@ const textareaClass =
   "min-h-28 rounded-md border border-zinc-800 bg-zinc-950 px-3 py-2 text-sm text-zinc-100 outline-none ring-primary/30 transition focus:ring-4";
 
 const fileInputClass =
-  "rounded-md border border-zinc-800 bg-zinc-950 px-3 py-2 text-sm text-zinc-100 outline-none file:mr-4 file:rounded-md file:border-0 file:bg-[#ffc10a] file:px-3 file:py-2 file:text-sm file:font-semibold file:text-[#050b20] focus:ring-4 focus:ring-primary/30";
+  "rounded-md border border-zinc-800 bg-zinc-950 px-3 py-2 text-sm text-zinc-100 outline-none file:mr-4 file:rounded-md file:border-0 file:bg-[#a21d2f] file:px-3 file:py-2 file:text-sm file:font-semibold file:text-white focus:ring-4 focus:ring-primary/30";
 
 const labelClass = "grid gap-2 text-sm font-medium text-zinc-200";
+

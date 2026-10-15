@@ -10,7 +10,7 @@ const statusLabels: Record<PublicVehicleStatus, string> = {
 const statusColorClasses: Record<PublicVehicleStatus, string> = {
   BROUILLON: "bg-[#5b6470]",
   DISPONIBLE: "bg-[#1f7a3d]",
-  RESERVE: "bg-[#f2a414]",
+  RESERVE: "bg-[#c2410c]",
   VENDU: "bg-[#d92d20]",
 };
 

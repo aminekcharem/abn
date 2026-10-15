@@ -97,7 +97,7 @@ export function MediaUploadForm() {
             "rounded-md border px-4 py-3 text-sm",
             state.ok
               ? "border-emerald-500/30 bg-emerald-500/10 text-emerald-200"
-              : "border-[#ffc10a]/40 bg-[#ffc10a]/10 text-[#ffc10a]",
+              : "border-[#a21d2f]/40 bg-[#a21d2f]/10 text-[#a21d2f]",
           )}
         >
           {state.message}
@@ -105,7 +105,7 @@ export function MediaUploadForm() {
       ) : null}
 
       {clientError ? (
-        <div className="rounded-md border border-[#ffc10a]/40 bg-[#ffc10a]/10 px-4 py-3 text-sm text-[#ffc10a]">
+        <div className="rounded-md border border-[#a21d2f]/40 bg-[#a21d2f]/10 px-4 py-3 text-sm text-[#a21d2f]">
           {clientError}
         </div>
       ) : null}

@@ -84,7 +84,7 @@ export function AdminShell({
   return (
     <div
       className={cn(
-        "min-h-screen bg-[#141414] text-zinc-50",
+        "min-h-dvh bg-[#141414] text-zinc-50",
         brand.adminTheme === "LIGHT" && "admin-light",
       )}
     >
@@ -97,7 +97,7 @@ export function AdminShell({
         />
       </div>
 
-      <div className="min-h-screen lg:pl-60">
+      <div className="min-h-dvh lg:pl-60">
         <header className="sticky top-0 z-30 flex h-16 items-center justify-between border-b border-white/10 bg-[#141414]/95 px-4 backdrop-blur-xl sm:px-6">
           <div className="flex min-w-0 items-center gap-3">
             <Sheet>
@@ -152,7 +152,7 @@ export function AdminShell({
           </Button>
         </header>
 
-        <main className="h-[calc(100vh-4rem)] overflow-y-auto p-4 sm:p-6 lg:p-8">
+        <main className="h-[calc(100dvh-4rem)] overflow-y-auto p-4 sm:p-6 lg:p-8">
           {children}
         </main>
       </div>

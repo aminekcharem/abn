@@ -15,7 +15,7 @@ export function CategoriesActionsPanel({ nextOrder }: { nextOrder: number }) {
         <Button
           className={
             isOpen
-              ? "bg-[#ffc10a] text-[#050b20] hover:bg-[#050b20] hover:text-white"
+              ? "bg-[#a21d2f] text-white hover:bg-[#050b20] hover:text-white"
               : "border-zinc-700 bg-zinc-950 text-zinc-100 hover:bg-zinc-800 hover:text-white"
           }
           onClick={() => setIsOpen((value) => !value)}
@@ -35,3 +35,4 @@ export function CategoriesActionsPanel({ nextOrder }: { nextOrder: number }) {
     </div>
   );
 }
+

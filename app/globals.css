@@ -5,19 +5,19 @@
   --foreground: #09090b;
   --card: #ffffff;
   --card-foreground: #09090b;
-  --primary: #ffc10a;
-  --primary-foreground: #050b20;
+  --primary: #a21d2f;
+  --primary-foreground: #ffffff;
   --secondary: #f4f4f5;
   --secondary-foreground: #18181b;
   --muted: #f4f4f5;
   --muted-foreground: #71717a;
   --accent: #f4f4f5;
   --accent-foreground: #18181b;
-  --destructive: #ffc10a;
-  --destructive-foreground: #050b20;
+  --destructive: #a21d2f;
+  --destructive-foreground: #ffffff;
   --border: #e4e4e7;
   --input: #d4d4d8;
-  --ring: #ffc10a;
+  --ring: #a21d2f;
 }
 
 @theme inline {
@@ -40,10 +40,11 @@
   --color-ring: var(--ring);
   --color-automotive-black: #050505;
   --color-automotive-anthracite: #18181b;
-  --color-automotive-red: #ffc10a;
+  --color-automotive-red: #a21d2f;
   --text-8xl: 5rem;
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --font-sans: var(--font-inter), Arial, Helvetica, sans-serif;
+  --font-heading: var(--font-manrope), Arial, Helvetica, sans-serif;
+  --font-mono: "Courier New", monospace;
 }
 
 .dark {
@@ -51,19 +52,19 @@
   --foreground: #fafafa;
   --card: #18181b;
   --card-foreground: #fafafa;
-  --primary: #ffc10a;
-  --primary-foreground: #050b20;
+  --primary: #a21d2f;
+  --primary-foreground: #ffffff;
   --secondary: #27272a;
   --secondary-foreground: #fafafa;
   --muted: #27272a;
   --muted-foreground: #a1a1aa;
   --accent: #27272a;
   --accent-foreground: #fafafa;
-  --destructive: #ffc10a;
-  --destructive-foreground: #050b20;
+  --destructive: #a21d2f;
+  --destructive-foreground: #ffffff;
   --border: #27272a;
   --input: #3f3f46;
-  --ring: #ffc10a;
+  --ring: #a21d2f;
 }
 
 * {
@@ -78,7 +79,38 @@ body {
   min-width: 320px;
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-inter), Arial, Helvetica, sans-serif;
+  font-weight: 400;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+[data-slot="card-title"],
+[data-slot="dialog-title"],
+.text-lg.font-bold,
+.text-lg.font-semibold,
+.text-xl.font-bold,
+.text-xl.font-semibold,
+.text-2xl.font-bold,
+.text-2xl.font-semibold,
+.text-3xl.font-bold,
+.text-3xl.font-semibold,
+.text-4xl.font-bold,
+.text-4xl.font-semibold,
+.text-5xl.font-bold,
+.text-5xl.font-semibold,
+.text-6xl.font-bold,
+.text-6xl.font-semibold,
+.text-7xl.font-bold,
+.text-7xl.font-semibold,
+.text-8xl.font-bold,
+.text-8xl.font-semibold {
+  font-family: var(--font-manrope), Arial, Helvetica, sans-serif;
+  font-weight: 700;
 }
 
 b,
@@ -132,17 +164,17 @@ optgroup {
 
 .admin-light button.bg-primary,
 .admin-light a.bg-primary,
-.admin-light button[class*="bg-[#ffc10a]"],
-.admin-light a[class*="bg-[#ffc10a]"] {
-  background-color: #ffc10a !important;
-  border-color: #ffc10a !important;
-  color: #050b20 !important;
+.admin-light button[class*="bg-[#a21d2f]"],
+.admin-light a[class*="bg-[#a21d2f]"] {
+  background-color: #a21d2f !important;
+  border-color: #a21d2f !important;
+  color: #ffffff !important;
 }
 
 .admin-light button.bg-primary:hover,
 .admin-light a.bg-primary:hover,
-.admin-light button[class*="bg-[#ffc10a]"]:hover,
-.admin-light a[class*="bg-[#ffc10a]"]:hover {
+.admin-light button[class*="bg-[#a21d2f]"]:hover,
+.admin-light a[class*="bg-[#a21d2f]"]:hover {
   background-color: #050b20 !important;
   border-color: #050b20 !important;
   color: #ffffff !important;
@@ -190,7 +222,7 @@ select {
 }
 
 ::selection {
-  background: #ffc10a;
+  background: #a21d2f;
   color: #050b20;
 }
 
@@ -227,7 +259,7 @@ select {
   bottom: 82px;
   height: 46px;
   border-radius: 80px 80px 16px 16px;
-  background: linear-gradient(90deg, #ffc10a, #ffe08a);
+  background: linear-gradient(90deg, #a21d2f, #a21d2f);
 }
 
 article:hover .vehicle-card-art::before {

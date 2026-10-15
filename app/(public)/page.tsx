@@ -3,27 +3,30 @@ import Link from "next/link";
 import { Prisma } from "@prisma/client";
 import {
   ArrowUpRight,
-  ChevronDown,
+  BadgeCheck,
+  Car,
+  ChevronLeft,
+  ChevronRight,
+  CircleArrowRight,
+  CircleDollarSign,
+  Headphones,
   Mail,
   MapPin,
   Phone,
+  Search,
+  ShieldCheck,
   Star,
 } from "lucide-react";
 
-import {
-  HomeInventorySearch,
-  type HomeInventoryVehicle,
-} from "./_components/home-inventory-search";
+import { AutrivaInventorySearch } from "./_components/autriva-inventory-search";
+import type { HomeInventoryVehicle } from "./_components/home-inventory-search";
+import { HeroCarousel, type HeroCarouselVehicle } from "./_components/hero-carousel";
 import { HomeFaqAccordion } from "./_components/home-faq-accordion";
-import { PublicLanguageSwitch } from "./_components/public-language-switch";
-import { PublicMobileMenu } from "./_components/public-mobile-menu";
+import { PublicHeader } from "./_components/public-header";
 import { getMediaUrl } from "@/lib/cdn";
-import { getHomepageSettings } from "@/lib/homepage-settings";
+import { getHomepageSettings, type HomepageSettingsView } from "@/lib/homepage-settings";
 import { getPrisma } from "@/lib/prisma";
-import {
-  getPublicBrandLinks,
-  type PublicBrandLink,
-} from "@/lib/public-navigation";
+import { getPublicBrandLinks } from "@/lib/public-navigation";
 import { getShowroomSettings, type ShowroomSettingsView } from "@/lib/settings";
 
 export const revalidate = 300;
@@ -74,54 +77,10 @@ type HomeReview = {
 };
 
 const fallbackCategories: HomeCategory[] = [
-  {
-    description: "SUV premium familiaux.",
-    icon: "suv",
-    id: "suv",
-    image: null,
-    name: "SUV",
-    slug: "suv",
-  },
-  {
-    description: "Berlines confortables.",
-    icon: "car",
-    id: "berline",
-    image: null,
-    name: "Berline",
-    slug: "berline",
-  },
-  {
-    description: "Compactes urbaines.",
-    icon: "car-front",
-    id: "compacte",
-    image: null,
-    name: "Compacte",
-    slug: "compacte",
-  },
-  {
-    description: "Coupés sportifs.",
-    icon: "gauge",
-    id: "coupe",
-    image: null,
-    name: "Coupe",
-    slug: "coupe",
-  },
-  {
-    description: "Pickups et utilitaires.",
-    icon: "truck",
-    id: "pickup",
-    image: null,
-    name: "Pickup",
-    slug: "pickup",
-  },
-  {
-    description: "Hybrides et électriques.",
-    icon: "sparkles",
-    id: "hybride",
-    image: null,
-    name: "Hybride",
-    slug: "hybride",
-  },
+  { description: "SUV premium familiaux.", icon: "suv", id: "suv", image: null, name: "SUV", slug: "suv" },
+  { description: "Berlines confortables.", icon: "car", id: "berline", image: null, name: "Berline", slug: "berline" },
+  { description: "Compactes urbaines.", icon: "car-front", id: "compacte", image: null, name: "Compacte", slug: "compacte" },
+  { description: "Coupes sportifs.", icon: "gauge", id: "coupe", image: null, name: "Coupe", slug: "coupe" },
 ];
 
 const fallbackVehicles: HomeVehicle[] = [
@@ -179,24 +138,6 @@ const fallbackVehicles: HomeVehicle[] = [
     transmission: "AUTOMATIQUE",
     year: 2024,
   },
-  {
-    brand: { name: "Genesis" },
-    category: { name: "Berline", slug: "berline" },
-    fuelType: "ESSENCE",
-    id: "fallback-genesis",
-    images: [],
-    isFeatured: false,
-    isNew: false,
-    mileage: 31850,
-    model: "G80 Luxury",
-    price: 94000,
-    priceCurrency: "TND",
-    slug: "genesis-g80-luxury",
-    status: "DISPONIBLE",
-    title: "Genesis G80 Luxury",
-    transmission: "AUTOMATIQUE",
-    year: 2023,
-  },
 ];
 
 const fallbackBrands: HomeBrand[] = [
@@ -208,32 +149,7 @@ const fallbackBrands: HomeBrand[] = [
   { id: "tesla", logo: null, name: "Tesla", slug: "tesla" },
 ];
 
-const homeNavLinks = [
-  { href: "/#top", label: "Accueil" },
-  { href: "/#marques", label: "Marques" },
-  { href: "/avis", label: "Avis" },
-  { href: "/donner-un-avis", label: "Donner un avis" },
-  { href: "/#contact", label: "Contact" },
-];
-
-const services: Array<[string, string]> = [
-  [
-    "Sourcing en Corée",
-    "Accès au marché coréen et sélection des véhicules adaptés à votre demande.",
-  ],
-  [
-    "Inspection et rapport",
-    "Contrôle des informations, photos, kilométrage et statut avant la réservation.",
-  ],
-  [
-    "Documentation export",
-    "Facture, documents de vente et suivi administratif regroupés au même endroit.",
-  ],
-  [
-    "Expédition maritime",
-    "Organisation du départ depuis Busan vers Radès, Le Havre et d'autres ports.",
-  ],
-];
+const serviceIcons = [BadgeCheck, ShieldCheck, CircleDollarSign, Headphones];
 
 function getImages(images: Prisma.JsonValue) {
   if (!Array.isArray(images)) return [];
@@ -292,14 +208,18 @@ function phoneHref(phone: string) {
 }
 
 function toInventoryVehicle(vehicle: HomeVehicle): HomeInventoryVehicle {
+  const images = getImages(vehicle.images);
+
   return {
     brandName: vehicle.brand.name,
-    categoryName: vehicle.category?.name || "Non classé",
+    categoryName: vehicle.category?.name || "Non classe",
     categorySlug: vehicle.category?.slug || "",
     fuel: formatFuel(vehicle.fuelType),
     id: vehicle.id,
-    image: vehicleImage(vehicle) || null,
+    image: images[0] || null,
+    imageCount: images.length,
     isFeatured: vehicle.isFeatured,
+    isNew: vehicle.isNew,
     mileage: vehicle.mileage,
     model: vehicle.model,
     price: Number(vehicle.price),
@@ -319,7 +239,6 @@ function getVehicleCreatedAtTime(vehicle: HomeVehicle) {
 async function getHomepageData() {
   try {
     const prisma = getPrisma();
-
     const [
       categories,
       vehicles,
@@ -331,14 +250,7 @@ async function getHomepageData() {
     ] = await Promise.all([
       prisma.category.findMany({
         orderBy: [{ order: "asc" }, { name: "asc" }],
-        select: {
-          description: true,
-          icon: true,
-          id: true,
-          image: true,
-          name: true,
-          slug: true,
-        },
+        select: { description: true, icon: true, id: true, image: true, name: true, slug: true },
         where: { isActive: true },
       }),
       prisma.vehicle.findMany({
@@ -366,25 +278,13 @@ async function getHomepageData() {
       }),
       prisma.brand.findMany({
         orderBy: { name: "asc" },
-        select: {
-          id: true,
-          logo: true,
-          name: true,
-          slug: true,
-        },
+        select: { id: true, logo: true, name: true, slug: true },
         take: 12,
         where: { isActive: true },
       }),
       prisma.review.findMany({
         orderBy: [{ rating: "desc" }, { createdAt: "desc" }],
-        select: {
-          firstName: true,
-          id: true,
-          isAnonymous: true,
-          lastName: true,
-          message: true,
-          rating: true,
-        },
+        select: { firstName: true, id: true, isAnonymous: true, lastName: true, message: true, rating: true },
         take: 6,
         where: { isPublished: true },
       }),
@@ -416,140 +316,73 @@ async function getHomepageData() {
 }
 
 export default async function Home() {
-  const { brandLinks, brands, homepageSettings, reviews, settings, vehicles } =
+  const { brandLinks, brands, categories, homepageSettings, reviews, settings, vehicles } =
     await getHomepageData();
-  const inventoryVehicles = [...vehicles]
-    .sort((first, second) => getVehicleCreatedAtTime(second) - getVehicleCreatedAtTime(first))
-    .slice(0, 9)
-    .map(toInventoryVehicle);
+  const sortedVehicles = [...vehicles].sort(
+    (first, second) => getVehicleCreatedAtTime(second) - getVehicleCreatedAtTime(first),
+  );
+  const inventoryVehicles = sortedVehicles.slice(0, 8).map(toInventoryVehicle);
+  const vehicleById = new Map(vehicles.map((vehicle) => [vehicle.id, vehicle]));
+  const selectedHeroVehicles = homepageSettings.heroSlides
+    .map((slide) => {
+      const vehicle = vehicleById.get(slide.vehicleId);
+
+      if (!vehicle) return null;
+
+      return { imagePath: slide.imagePath, vehicle };
+    })
+    .filter((item): item is { imagePath: string | null; vehicle: HomeVehicle } => Boolean(item));
+  const heroSourceVehicles = selectedHeroVehicles.length
+    ? selectedHeroVehicles
+    : sortedVehicles.slice(0, 4).map((vehicle) => ({ imagePath: null, vehicle }));
+  const heroVehicles: HeroCarouselVehicle[] = heroSourceVehicles.map(({ imagePath, vehicle }) => {
+    const firstImagePath = imagePath || vehicleImage(vehicle);
+
+    return {
+      badge: vehicle.brand.name,
+      fuel: formatFuel(vehicle.fuelType),
+      imageUrl: firstImagePath ? getMediaUrl(firstImagePath) : "/showroom-hero.png",
+      mileage: vehicle.mileage
+        ? `${new Intl.NumberFormat("fr-FR").format(vehicle.mileage)} km`
+        : null,
+      price: formatPrice(vehicle.price, vehicle.priceCurrency),
+      slug: vehicle.slug,
+      title: vehicle.title,
+      transmission: formatTransmission(vehicle.transmission),
+      year: vehicle.year ? String(vehicle.year) : null,
+    };
+  });
 
   return (
-    <main className="min-h-screen bg-[#f7f7f5] text-[#14181d]">
-      <HomeHeader brandLinks={brandLinks} settings={settings} />
-      <Hero settings={settings} />
+    <main className="min-h-screen bg-[#f7f7f5] text-[#111111]">
+      <PublicHeader brandLinks={brandLinks} settings={settings} />
+      <HeroCarousel vehicles={heroVehicles} />
 
-      <section id="vehicules" className="px-5 py-14">
-        <div className="mx-auto max-w-6xl">
-          <HomeInventorySearch vehicles={inventoryVehicles} />
+      <section id="vehicules" className="relative z-20 -mt-16 px-5 pb-14">
+        <div className="mx-auto max-w-7xl">
+          <AutrivaInventorySearch vehicles={inventoryVehicles} />
         </div>
       </section>
 
-      <section id="marques" className="border-y border-[#e3e4e1] bg-white px-5 py-14">
-        <div className="mx-auto max-w-6xl">
-          <SectionHead title="Nos marques" />
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            {brands.slice(0, 8).map((brand) => {
-              const count = vehicles.filter((vehicle) => vehicle.brand.name === brand.name).length;
-              const countLabel = count > 1 ? "véhicules" : "véhicule";
-
-              return (
-                <Link
-                  className="group flex min-h-[168px] flex-col items-center justify-between rounded-[10px] border border-[#e3e4e1] bg-[#f7f7f5] p-5 text-center transition duration-300 hover:-translate-y-1 hover:border-[#f2a414] hover:bg-white hover:shadow-[0_18px_45px_rgba(20,24,29,0.08)]"
-                  href={`/marques/${brand.slug}`}
-                  key={brand.id}
-                >
-                  <span className="flex h-24 w-full items-center justify-center rounded-md border border-white bg-white px-6 shadow-[inset_0_0_0_1px_rgba(20,24,29,0.03)] transition group-hover:border-[#f2a414]/45">
-                    {brand.logo ? (
-                      <Image
-                        alt={brand.name}
-                        className="max-h-16 w-auto object-contain"
-                        height={64}
-                        src={getMediaUrl(brand.logo)}
-                        width={150}
-                      />
-                    ) : (
-                      <span className="grid h-16 w-16 place-items-center rounded-full bg-[#14181d] text-lg font-semibold text-white">
-                        {brand.name.slice(0, 2).toUpperCase()}
-                      </span>
-                    )}
-                  </span>
-                  <span className="mt-4 block text-sm font-semibold text-[#14181d] transition group-hover:text-[#c98a0b]">
-                    {brand.name}
-                  </span>
-                  <small className="mt-2 inline-flex rounded-full bg-white px-3 py-1 text-xs font-medium text-[#5b6470] ring-1 ring-[#e3e4e1]">
-                    {count} {countLabel}
-                  </small>
-                </Link>
-              );
-            })}
-          </div>
-        </div>
-      </section>
-
-      <section id="services" className="bg-[#14181d] px-5 py-16 text-white">
-        <div className="mx-auto max-w-6xl">
-          <SectionHead dark title={homepageSettings.whyChooseUsTitle || "Pourquoi choisir AUTO PRO ?"} />
-          <div className="grid gap-5 md:grid-cols-2 lg:grid-cols-4">
-            {services.map(([title, text], index) => (
-              <article
-                className="rounded-[10px] border border-white/10 bg-[#1f2630] p-6"
-                key={title}
-              >
-                <div className="mb-4 font-mono text-[15px] font-semibold tracking-[0.18em] text-[#f2a414]">
-                  {String(index + 1).padStart(2, "0")}
-                </div>
-                <h3 className="text-lg font-semibold uppercase tracking-normal">{title}</h3>
-                <p className="mt-3 text-sm leading-7 text-white/70">{homepageSettings.whyChooseUsItems[index]?.text || text}</p>
-              </article>
-            ))}
-          </div>
-        </div>
-      </section>
+      <ModelSection categories={categories} vehicles={vehicles} />
+      <ReputableSection
+        homepageSettings={homepageSettings}
+        settings={settings}
+        vehicle={sortedVehicles[0]}
+        vehicleCount={vehicles.length}
+      />
+      <WhyChooseSection homepageSettings={homepageSettings} />
+      <ActionBanners settings={settings} />
+      <BrandSearchSection brands={brands} />
 
       {homepageSettings.showReviews ? (
-        <section className="border-y border-[#e3e4e1] bg-white px-5 py-14">
-          <div className="mx-auto grid max-w-6xl gap-8 lg:grid-cols-[0.35fr_0.65fr]">
-            <div>
-              <SectionHead title="Avis clients" />
-              <p className="text-sm leading-7 text-[#5b6470]">
-                {reviews.length
-                  ? `Note moyenne ${averageRating(reviews)} / 5 basée sur les avis publiés.`
-                  : "Les premiers avis publiés apparaîtront ici après validation."}
-              </p>
-              <div className="mt-5 flex gap-1 text-[#f2a414]">
-                {Array.from({ length: 5 }).map((_, index) => (
-                  <Star className="h-5 w-5 fill-current" key={index} />
-                ))}
-              </div>
-            </div>
-            <div className="grid gap-5 md:grid-cols-3">
-              {reviews.slice(0, 3).map((review) => (
-                <article className="rounded-[10px] border border-[#e3e4e1] bg-[#f7f7f5] p-6" key={review.id}>
-                  <div className="flex gap-1 text-[#f2a414]">
-                    {Array.from({ length: 5 }).map((_, index) => (
-                      <Star
-                        className={
-                          index < review.rating
-                            ? "h-4 w-4 fill-current"
-                            : "h-4 w-4 text-[#14181d]/15"
-                        }
-                        key={index}
-                      />
-                    ))}
-                  </div>
-                  <p className="mt-5 text-sm leading-7 text-[#5b6470]">{review.message}</p>
-                  <p className="mt-5 text-xs font-semibold uppercase tracking-normal text-[#14181d]/55">
-                    {displayReviewName(review)}
-                  </p>
-                </article>
-              ))}
-              {!reviews.length ? (
-                <article className="rounded-[10px] border border-dashed border-[#14181d]/15 bg-[#f7f7f5] p-6 md:col-span-3">
-                  <h3 className="font-semibold">Aucun avis publié pour le moment</h3>
-                  <p className="mt-3 text-sm leading-7 text-[#5b6470]">
-                    Les avis soumis depuis le formulaire seront affichés ici une fois publiés par l&apos;administration.
-                  </p>
-                </article>
-              ) : null}
-            </div>
-          </div>
-        </section>
+        <CustomerFeedbackSection reviews={reviews} vehicle={sortedVehicles[0]} />
       ) : null}
 
       {homepageSettings.showFaqs ? (
-        <section className="bg-[#f7f7f5] px-5 py-14">
+        <section className="bg-white px-5 py-16">
           <div className="mx-auto max-w-4xl">
-            <SectionHead centered title="Questions fréquentes" />
+            <SectionHead centered title="Questions frequentes" />
             <HomeFaqAccordion items={homepageSettings.faqItems} />
           </div>
         </section>
@@ -560,122 +393,98 @@ export default async function Home() {
   );
 }
 
-function HomeHeader({
-  brandLinks,
-  settings,
+function CustomerFeedbackSection({
+  reviews,
+  vehicle,
 }: {
-  brandLinks: PublicBrandLink[];
-  settings: ShowroomSettingsView;
+  reviews: HomeReview[];
+  vehicle: HomeVehicle | undefined;
 }) {
-  const logoUrl = settings.websiteLogoUrl || settings.logoUrl;
-  const mobileLinks = brandLinks.length
-    ? homeNavLinks.map((link) =>
-        link.label === "Marques"
-          ? {
-              children: [
-                { href: link.href, label: "Toutes les marques" },
-                ...brandLinks.map((brand) => ({
-                  href: brand.href,
-                  label: brand.label,
-                })),
-              ],
-              href: link.href,
-              label: link.label,
-            }
-          : link,
-      )
-    : homeNavLinks;
+  const featuredReview = reviews[0];
+  const imagePath = vehicle ? vehicleImage(vehicle) : null;
+  const reviewCountLabel = reviews.length
+    ? `${averageRating(reviews)} rating of ${new Intl.NumberFormat("fr-FR").format(reviews.length)} reviews`
+    : "Avis clients en cours de publication";
 
   return (
-    <header className="sticky top-0 z-[280] bg-[#14181d] text-white">
-      <div className="mx-auto flex min-h-[68px] max-w-6xl items-center justify-between gap-4 px-5">
-        <Link className="flex min-w-0 items-center gap-3" href="/" aria-label={settings.companyName}>
-          {logoUrl ? (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img
-              alt={settings.companyName}
-              className="block max-h-[38px] max-w-[210px] object-contain"
-              height={settings.logoHeight}
-              src={logoUrl}
-              width={settings.logoWidth}
-            />
-          ) : (
-            <span className="text-xl font-semibold uppercase tracking-[0.12em]">
-              {settings.companyName}
-            </span>
-          )}
-        </Link>
-
-        <nav className="hidden items-center gap-6 text-sm font-medium text-white/85 lg:flex">
-          <Link className="transition hover:text-[#f2a414]" href="/#top">Accueil</Link>
-          <div className="group relative">
-            <Link
-              className="inline-flex items-center gap-1 transition hover:text-[#f2a414]"
-              href="/marques"
-            >
-              Marques
-              <ChevronDown className="h-3.5 w-3.5 transition group-hover:rotate-180" />
-            </Link>
-            {brandLinks.length ? (
-              <div className="invisible absolute left-1/2 top-full z-[320] w-64 -translate-x-1/2 pt-3 opacity-0 transition duration-150 group-hover:visible group-hover:opacity-100 group-focus-within:visible group-focus-within:opacity-100">
-                <div className="rounded-md border border-white/10 bg-[#14181d] p-2 shadow-2xl shadow-black/35">
-                  {brandLinks.map((brand) => (
-                    <Link
-                      className="flex min-h-10 items-center justify-between gap-3 rounded-md px-3 py-2 text-sm text-white/82 transition hover:bg-white/10 hover:text-white"
-                      href={brand.href}
-                      key={brand.href}
-                    >
-                      <span className="truncate">{brand.label}</span>
-                      <span className="shrink-0 rounded-full bg-white/10 px-2 py-0.5 text-[11px] text-white/62">
-                        {brand.vehicleCount}
-                      </span>
-                    </Link>
-                  ))}
-                </div>
-              </div>
-            ) : null}
-          </div>
-          <Link className="transition hover:text-[#f2a414]" href="/#services">Services</Link>
-          <Link className="transition hover:text-[#f2a414]" href="/#contact">Contact</Link>
-        </nav>
-
-        <div className="flex items-center gap-3">
-          <PublicLanguageSwitch />
-          <a
-            className="hidden font-mono text-xs font-medium text-white/90 md:inline"
-            href={phoneHref(settings.contactPhone)}
-          >
-            {settings.contactPhone}
-          </a>
-          <PublicMobileMenu links={mobileLinks} />
+    <section className="relative overflow-hidden bg-[#23272d] text-white">
+      <div className="grid min-h-[560px] lg:grid-cols-2">
+        <div className="relative min-h-[340px] bg-[#0b0d10] lg:min-h-[560px]">
+          <Image
+            alt=""
+            className="object-cover"
+            fill
+            sizes="(max-width: 1024px) 100vw, 50vw"
+            src={imagePath ? getMediaUrl(imagePath) : "/showroom-hero.png"}
+          />
+          <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(0,0,0,0.16),rgba(0,0,0,0.02)),linear-gradient(0deg,rgba(0,0,0,0.12),rgba(0,0,0,0))]" />
         </div>
-      </div>
-    </header>
-  );
-}
 
-function Hero({ settings }: { settings: ShowroomSettingsView }) {
-  return (
-    <section id="top" className="relative overflow-hidden bg-[linear-gradient(160deg,#14181d_0%,#1f2630_55%,#2a3442_100%)] px-5 pt-16 text-white">
-      <div className="absolute -right-28 -top-20 h-[520px] w-[520px] rounded-full border border-[#f2a414]/35" />
-      <div className="absolute -right-10 top-5 h-[340px] w-[340px] rounded-full border border-white/10" />
-      <div className="relative mx-auto max-w-6xl pb-10">
-        <p className="font-mono text-xs font-medium uppercase tracking-[0.22em] text-[#c9a24b]">
-          Export de véhicules coréens - Corée du Sud
-        </p>
-        <h1 className="mt-4 max-w-3xl text-4xl font-semibold uppercase leading-[1.08] tracking-normal sm:text-5xl lg:text-[52px]">
-          Votre voiture coréenne, <span className="text-[#f2a414]">livrée à votre port.</span>
-        </h1>
-        <p className="mt-4 max-w-xl text-base leading-7 text-white/75">
-          Sourcing, inspection, documentation export et expédition maritime depuis Busan avec l&apos;équipe {settings.companyName}.
-        </p>
-        <div className="mt-8 flex flex-wrap items-center gap-3 font-mono text-xs text-white/85">
-          <span className="rounded-md border border-white/30 bg-white/5 px-3 py-2">BUSAN - KR</span>
-          <span className="h-px w-14 bg-[repeating-linear-gradient(90deg,#f2a414_0_8px,transparent_8px_14px)]" />
-          <span className="rounded-md border border-white/30 bg-white/5 px-3 py-2">RADÈS - TN</span>
-          <span className="h-px w-14 bg-[repeating-linear-gradient(90deg,#f2a414_0_8px,transparent_8px_14px)]" />
-          <span className="rounded-md border border-white/30 bg-white/5 px-3 py-2">LE HAVRE - FR</span>
-          <span className="text-[#c9a24b]">CIF / CIP - RoRo &amp; Conteneur</span>
+        <div className="flex items-center px-5 py-16 sm:px-10 lg:px-20">
+          <article className="w-full max-w-[560px]">
+            <h2 className="text-3xl font-bold leading-tight tracking-normal text-white sm:text-4xl">
+              Ce que disent nos clients
+            </h2>
+
+            <div className="mt-7 flex flex-wrap items-center gap-3">
+              <div className="flex gap-1 text-[#f6c400]">
+                {Array.from({ length: 5 }).map((_, index) => (
+                  <Star
+                    className={
+                      featuredReview && index >= featuredReview.rating
+                        ? "h-4 w-4 text-white/20"
+                        : "h-4 w-4 fill-current"
+                    }
+                    key={index}
+                  />
+                ))}
+              </div>
+              <p className="text-xs font-semibold text-white/45">{reviewCountLabel}</p>
+            </div>
+
+            {featuredReview ? (
+              <>
+                <blockquote className="mt-11 text-2xl font-semibold leading-snug text-white/90">
+                  &quot;{featuredReview.message}&quot;
+                </blockquote>
+                <div className="mt-10">
+                  <p className="text-base font-bold text-white">
+                    {displayReviewName(featuredReview)}
+                  </p>
+                  <p className="mt-1 text-xs font-semibold text-white/35">Client verifie</p>
+                </div>
+              </>
+            ) : (
+              <>
+                <blockquote className="mt-11 text-2xl font-semibold leading-snug text-white/90">
+                  &quot;Les premiers avis publies apparaitront ici apres validation par notre equipe.&quot;
+                </blockquote>
+                <div className="mt-10">
+                  <p className="text-base font-bold text-white">Abn Motors</p>
+                  <p className="mt-1 text-xs font-semibold text-white/35">Service client</p>
+                </div>
+              </>
+            )}
+
+            <div className="mt-20 flex items-center gap-4">
+              <button
+                aria-label="Avis precedent"
+                className="grid h-12 w-12 place-items-center rounded-full border border-white/10 bg-transparent text-white/80 transition hover:border-white/25 hover:bg-white/5"
+                disabled={reviews.length < 2}
+                type="button"
+              >
+                <ChevronLeft className="h-4 w-4" />
+              </button>
+              <button
+                aria-label="Avis suivant"
+                className="grid h-12 w-12 place-items-center rounded-full border border-white/10 bg-transparent text-white/80 transition hover:border-white/25 hover:bg-white/5"
+                disabled={reviews.length < 2}
+                type="button"
+              >
+                <ChevronRight className="h-4 w-4" />
+              </button>
+            </div>
+          </article>
         </div>
       </div>
     </section>
@@ -684,38 +493,273 @@ function Hero({ settings }: { settings: ShowroomSettingsView }) {
 
 function SectionHead({
   centered = false,
-  count,
-  dark = false,
   title,
 }: {
   centered?: boolean;
-  count?: string;
-  dark?: boolean;
   title: string;
 }) {
   return (
-    <div className={`mb-7 flex flex-wrap items-end gap-4 ${centered ? "justify-center text-center" : "justify-between"}`}>
-      <h2 className={`text-2xl font-semibold uppercase tracking-normal sm:text-3xl ${dark ? "text-white" : "text-[#14181d]"}`}>
-        {title}
-        <span className={`mx-0 mt-2 block h-0.5 w-14 bg-[#f2a414] ${centered ? "mx-auto" : ""}`} />
-      </h2>
-      {count ? <span className="font-mono text-xs text-[#5b6470]">{count}</span> : null}
+    <div className={`mb-8 ${centered ? "text-center" : ""}`}>
+      <h2 className="text-3xl font-bold tracking-normal text-[#111111] sm:text-4xl">{title}</h2>
+      <span className={`mt-3 block h-1 w-14 rounded-full bg-[#a21d2f] ${centered ? "mx-auto" : ""}`} />
     </div>
+  );
+}
+
+function ModelSection({
+  categories,
+  vehicles,
+}: {
+  categories: HomeCategory[];
+  vehicles: HomeVehicle[];
+}) {
+  return (
+    <section className="bg-[#f7f7f5] px-5 py-20">
+      <div className="mx-auto max-w-7xl">
+        <div className="mb-10 flex flex-wrap items-center justify-between gap-4">
+          <h2 className="text-3xl font-bold tracking-normal text-[#111111] sm:text-4xl">
+            Trouvez par carrosserie
+          </h2>
+          <Link
+            className="inline-flex items-center gap-2 text-sm font-bold text-[#111111] transition hover:text-[#a21d2f]"
+            href="/categories"
+          >
+            Voir tout
+            <CircleArrowRight className="h-5 w-5" />
+          </Link>
+        </div>
+        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
+          {categories.slice(0, 6).map((category) => {
+            const count = vehicles.filter((vehicle) => vehicle.category?.slug === category.slug).length;
+            const image = category.image?.startsWith("/uploads/") ? category.image : null;
+
+            return (
+              <Link
+                className="group flex min-h-[176px] flex-col items-center justify-center rounded-md border border-[#e7e7e7] bg-white px-5 py-7 text-center shadow-[0_10px_26px_rgba(20,24,29,0.04)] transition hover:-translate-y-1 hover:border-[#a21d2f]/45 hover:shadow-[0_18px_40px_rgba(17,17,17,0.08)]"
+                href={`/categories?category=${category.slug}`}
+                key={category.id}
+              >
+                <span className="grid h-16 w-full place-items-center text-[#8e939a] transition group-hover:text-[#a21d2f]">
+                  {image ? (
+                    <Image
+                      alt={category.name}
+                      className="h-full w-full object-contain"
+                      height={72}
+                      src={getMediaUrl(image)}
+                      width={170}
+                    />
+                  ) : (
+                    <Car className="h-12 w-12 stroke-[1.5]" />
+                  )}
+                </span>
+                <span className="mt-7 block text-lg font-bold leading-tight text-[#2b2f34] group-hover:text-[#a21d2f]">
+                  {category.name}
+                </span>
+                <span className="mt-2 block text-xs text-[#6f7378]">{count} vehicule(s)</span>
+              </Link>
+            );
+          })}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function ReputableSection({
+  homepageSettings,
+  settings,
+  vehicle,
+  vehicleCount,
+}: {
+  homepageSettings: HomepageSettingsView;
+  settings: ShowroomSettingsView;
+  vehicle: HomeVehicle | undefined;
+  vehicleCount: number;
+}) {
+  const imagePath = vehicle ? vehicleImage(vehicle) : null;
+
+  return (
+    <section className="bg-[#080808] px-5 py-20 text-white">
+      <div className="mx-auto grid max-w-7xl gap-10 lg:grid-cols-[0.42fr_0.58fr] lg:items-center">
+        <div className="relative min-h-[360px] overflow-hidden rounded-md bg-[#151515] shadow-[0_24px_70px_rgba(0,0,0,0.28)]">
+          {imagePath ? (
+            <Image alt="" className="object-cover" fill sizes="(max-width: 1024px) 100vw, 42vw" src={getMediaUrl(imagePath)} />
+          ) : (
+            <div className="grid h-full min-h-[360px] place-items-center text-white/40">
+              <Car className="h-24 w-24" />
+            </div>
+          )}
+          <div className="absolute left-6 top-6 rounded-md bg-[#a21d2f] px-6 py-5 text-center shadow-[0_16px_36px_rgba(0,0,0,0.25)]">
+            <div className="text-4xl font-bold">{vehicleCount}</div>
+            <p className="text-sm font-semibold">Vehicules</p>
+          </div>
+        </div>
+        <div>
+          {settings.websiteLogoUrl || settings.logoUrl ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              alt={settings.companyName}
+              className="mb-8 max-h-12 w-auto object-contain"
+              src={settings.websiteLogoUrl || settings.logoUrl || ""}
+            />
+          ) : null}
+          <h2 className="max-w-3xl text-4xl font-bold leading-tight sm:text-5xl">
+            {homepageSettings.aboutTitle || `${settings.companyName} is a reputable platform for car listings`}
+          </h2>
+          <p className="mt-6 max-w-3xl text-base leading-8 text-white/70">
+            {homepageSettings.aboutText || "Nous connectons les acheteurs a des vehicules verifies, avec suivi, inspection et accompagnement jusqu'a l'export."}
+          </p>
+          <div className="mt-8 flex flex-wrap gap-3">
+            <Link className="inline-flex min-h-12 items-center gap-2 rounded-md bg-[#a21d2f] px-6 text-sm font-bold text-white" href="/#contact">
+            Vendre
+              <ArrowUpRight className="h-4 w-4" />
+            </Link>
+            <Link className="inline-flex min-h-12 items-center gap-2 rounded-md border border-white/20 px-6 text-sm font-bold text-white" href="/#vehicules">
+            Voir le stock
+              <Search className="h-4 w-4" />
+            </Link>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function WhyChooseSection({
+  homepageSettings,
+}: {
+  homepageSettings: HomepageSettingsView;
+}) {
+  return (
+    <section id="services" className="bg-[#f7f7f5] px-5 py-20">
+      <div className="mx-auto max-w-7xl">
+        <div className="mb-10 text-center">
+          <h2 className="text-3xl font-bold sm:text-4xl">
+            {homepageSettings.whyChooseUsTitle || "Pourquoi nous choisir"}
+          </h2>
+          <p className="mx-auto mt-3 max-w-2xl text-base leading-7 text-[#5b6470]">
+            Service fiable, conseils experts et solutions centrees client.
+          </p>
+        </div>
+        <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-4">
+          {homepageSettings.whyChooseUsItems.slice(0, 4).map((item, index) => {
+            const Icon = serviceIcons[index] || BadgeCheck;
+
+            return (
+              <article
+                className="rounded-md border border-[#ececec] bg-white p-7 shadow-[0_12px_34px_rgba(20,24,29,0.06)] transition hover:-translate-y-1 hover:border-[#a21d2f]/35 hover:shadow-[0_18px_42px_rgba(20,24,29,0.1)]"
+                key={`${item.title}-${index}`}
+              >
+                <Icon className="h-14 w-14 text-[#a21d2f]" />
+                <h3 className="mt-6 text-xl font-bold text-[#111111]">{item.title}</h3>
+                <p className="mt-4 text-sm leading-7 text-[#5b6470]">{item.text}</p>
+              </article>
+            );
+          })}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function ActionBanners({ settings }: { settings: ShowroomSettingsView }) {
+  return (
+    <section className="bg-[#f7f7f5] px-5 py-6 pb-20">
+      <div className="mx-auto grid max-w-7xl gap-8 md:grid-cols-2">
+        <article className="relative min-h-[280px] overflow-hidden rounded-md bg-[#090909] p-8 text-white">
+          <div className="relative z-10 max-w-sm">
+            <h3 className="text-3xl font-bold">Vous cherchez une voiture ?</h3>
+            <p className="mt-4 text-sm leading-7 text-white/70">
+              Trouvez une voiture fiable avec inspection, photos et informations claires.
+            </p>
+            <Link className="mt-6 inline-flex items-center gap-2 text-sm font-bold text-white" href="/#vehicules">
+              Voir les vehicules
+              <ArrowUpRight className="h-4 w-4" />
+            </Link>
+          </div>
+          <Car className="absolute bottom-6 right-6 h-32 w-32 text-white/12" />
+        </article>
+        <article className="relative min-h-[280px] overflow-hidden rounded-md bg-[#a21d2f] p-8 text-white">
+          <div className="relative z-10 max-w-sm">
+            <h3 className="text-3xl font-bold">Vous souhaitez vendre ?</h3>
+            <p className="mt-4 text-sm leading-7 text-white/80">
+              Contactez notre equipe pour l&apos;evaluation, les documents et le suivi commercial.
+            </p>
+            <a className="mt-6 inline-flex items-center gap-2 text-sm font-bold text-white" href={phoneHref(settings.contactPhone)}>
+              Nous appeler
+              <ArrowUpRight className="h-4 w-4" />
+            </a>
+          </div>
+          <CircleDollarSign className="absolute bottom-6 right-6 h-32 w-32 text-white/18" />
+        </article>
+      </div>
+    </section>
+  );
+}
+
+function BrandSearchSection({
+  brands,
+}: {
+  brands: HomeBrand[];
+}) {
+  return (
+    <section id="marques" className="bg-white px-5 py-20">
+      <div className="mx-auto max-w-[1476px]">
+        <div className="mb-11 flex items-center justify-between gap-5">
+          <h2 className="text-3xl font-bold tracking-normal text-[#111111] sm:text-[38px]">
+            Marques populaires
+          </h2>
+          <Link
+            className="inline-flex shrink-0 items-center gap-2 text-sm font-bold text-black transition hover:text-[#a21d2f] sm:text-base"
+            href="/marques"
+          >
+            Voir tout
+            <CircleArrowRight className="h-5 w-5" strokeWidth={2} />
+          </Link>
+        </div>
+        <div className="grid grid-cols-2 gap-x-7 gap-y-9 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-9">
+          {brands.slice(0, 9).map((brand) => (
+            <Link
+              className="group flex min-w-0 flex-col items-center text-center"
+              href={`/marques/${brand.slug}`}
+              key={brand.id}
+            >
+              <span className="grid h-[120px] w-[120px] place-items-center rounded-full border border-[#f0f0f0] bg-white px-6 shadow-[0_10px_22px_rgba(20,24,29,0.08)] transition group-hover:-translate-y-1 group-hover:border-[#a21d2f]/35 group-hover:shadow-[0_16px_32px_rgba(20,24,29,0.12)] sm:h-[122px] sm:w-[122px]">
+                {brand.logo ? (
+                  <Image
+                    alt={brand.name}
+                    className="max-h-[64px] w-auto max-w-[82px] object-contain"
+                    height={64}
+                    src={getMediaUrl(brand.logo)}
+                    width={96}
+                  />
+                ) : (
+                  <span className="text-xl font-bold text-[#111111]">
+                    {brand.name.slice(0, 2).toUpperCase()}
+                  </span>
+                )}
+              </span>
+              <span className="mt-4 block max-w-full truncate text-sm font-semibold text-[#2d3035] transition group-hover:text-[#a21d2f]">
+                {brand.name}
+              </span>
+            </Link>
+          ))}
+        </div>
+      </div>
+    </section>
   );
 }
 
 function ContactBand({ settings }: { settings: ShowroomSettingsView }) {
   return (
-    <section id="contact" className="bg-[#f2a414] px-5 py-11 text-[#14181d]">
-      <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-5">
+      <section id="contact" className="bg-[#111111] px-5 py-14 text-white">
+      <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-5">
         <div>
-          <h2 className="text-2xl font-semibold uppercase tracking-normal sm:text-3xl">
-            Un véhicule vous intéresse ?
-          </h2>
-          <p className="mt-2 text-sm text-[#14181d]/80">
-            Réponse rapide par téléphone, email ou message direct.
+          <h2 className="text-3xl font-bold">Un vehicule vous interesse ?</h2>
+          <p className="mt-2 text-sm text-white/70">
+            Reponse rapide par telephone, email ou message direct.
           </p>
-          <div className="mt-4 flex flex-wrap gap-4 text-sm">
+          <div className="mt-4 flex flex-wrap gap-4 text-sm text-white/80">
             <a className="inline-flex items-center gap-2" href={phoneHref(settings.contactPhone)}>
               <Phone className="h-4 w-4" />
               {settings.contactPhone}
@@ -726,12 +770,12 @@ function ContactBand({ settings }: { settings: ShowroomSettingsView }) {
             </a>
             <span className="inline-flex items-center gap-2">
               <MapPin className="h-4 w-4" />
-              Busan / Gyeongju
+              Bonabéri, Cameroun
             </span>
           </div>
         </div>
         <a
-          className="inline-flex items-center gap-2 rounded-lg bg-[#14181d] px-6 py-3 text-sm font-bold text-white transition hover:-translate-y-0.5"
+          className="inline-flex min-h-12 items-center gap-2 rounded-md bg-[#a21d2f] px-6 text-sm font-bold text-white transition hover:bg-white hover:text-[#111111]"
           href={phoneHref(settings.contactPhone)}
         >
           Nous contacter

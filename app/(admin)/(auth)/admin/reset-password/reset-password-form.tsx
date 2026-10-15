@@ -55,7 +55,7 @@ export function ResetPasswordForm({ token }: { token: string }) {
       </Button>
       {state.status === "success" ? (
         <Link
-          className="text-center text-sm font-semibold text-primary transition hover:text-[#ffd24a]"
+          className="text-center text-sm font-semibold text-primary transition hover:text-[#a21d2f]"
           href="/admin/login"
         >
           Se connecter

@@ -80,7 +80,7 @@ export default async function AdminNewsletterPage() {
               Excel
             </Link>
           </Button>
-          <Badge className="border-[#ffc10a]/40 bg-[#ffc10a]/10 text-[#ffc10a]" variant="outline">
+          <Badge className="border-[#a21d2f]/40 bg-[#a21d2f]/10 text-[#a21d2f]" variant="outline">
             {subscribers.length} inscrit{subscribers.length > 1 ? "s" : ""}
           </Badge>
         </div>
@@ -125,7 +125,7 @@ export default async function AdminNewsletterPage() {
                       {formatDate(subscriber.createdAt)}
                     </td>
                     <td className="px-4 py-4">
-                      <Badge className="border-[#ffc10a]/40 bg-[#ffc10a]/10 text-[#ffc10a]" variant="outline">
+                      <Badge className="border-[#a21d2f]/40 bg-[#a21d2f]/10 text-[#a21d2f]" variant="outline">
                         Inscrit
                       </Badge>
                     </td>
@@ -167,7 +167,7 @@ function StatCard({
   return (
     <Card className="border-zinc-800 bg-zinc-900">
       <CardContent className="flex items-center gap-4 p-5">
-        <span className="grid h-11 w-11 shrink-0 place-items-center rounded-md border border-[#ffc10a]/30 bg-[#ffc10a]/10 text-[#ffc10a]">
+        <span className="grid h-11 w-11 shrink-0 place-items-center rounded-md border border-[#a21d2f]/30 bg-[#a21d2f]/10 text-[#a21d2f]">
           <Icon className="h-5 w-5" />
         </span>
         <div className="min-w-0">

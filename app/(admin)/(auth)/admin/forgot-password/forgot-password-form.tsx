@@ -59,7 +59,7 @@ export function ForgotPasswordForm() {
         {pending ? "Envoi..." : "Recevoir le lien"}
       </Button>
       <Link
-        className="text-center text-sm font-semibold text-primary transition hover:text-[#ffd24a]"
+        className="text-center text-sm font-semibold text-primary transition hover:text-[#a21d2f]"
         href="/admin/login"
       >
         Retour a la connexion

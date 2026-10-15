@@ -88,7 +88,7 @@ export default async function AdminMediaPage({
       </div>
 
       {hasDatabaseError ? (
-        <div className="rounded-md border border-orange-500/30 bg-orange-500/10 px-4 py-3 text-sm text-orange-100">
+        <div className="rounded-md border border-[#a21d2f]/30 bg-[#a21d2f]/10 px-4 py-3 text-sm text-[#a21d2f]">
           Connexion MySQL indisponible. Appliquez les migrations puis regenerez
           le client Prisma pour activer le module media.
         </div>

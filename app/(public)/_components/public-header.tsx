@@ -1,8 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { ChevronDown, ChevronLeft } from "lucide-react";
-import { useEffect, useState } from "react";
+import { ChevronDown, Phone, Search } from "lucide-react";
 
 import { PublicLanguageSwitch } from "./public-language-switch";
 import { PublicMobileMenu } from "./public-mobile-menu";
@@ -10,162 +9,141 @@ import type { PublicBrandLink } from "@/lib/public-navigation";
 import type { ShowroomSettingsView } from "@/lib/settings";
 
 const navLinks = [
-  ["Accueil", "/#top"],
-  ["Marques", "/marques"],
-  ["Avis", "/avis"],
-  ["Donner un avis", "/donner-un-avis"],
-  ["Contact", "/#contact"],
+  { href: "/#top", label: "Accueil" },
+  { href: "/marques", label: "Marques" },
+  { href: "/categories", label: "Categories" },
+  { href: "/avis", label: "Avis" },
+  { href: "/#contact", label: "Contact" },
 ];
 
-const mobileNavLinks = navLinks.map(([label, href]) => ({ href, label }));
-
 type PublicHeaderProps = {
-  backLink?: {
-    href: string;
-    label: string;
-  };
   brandLinks?: PublicBrandLink[];
   settings: ShowroomSettingsView;
-  overlay?: boolean;
   sticky?: boolean;
 };
 
+function phoneHref(phone: string) {
+  return `tel:${phone.replace(/[^\d+]/g, "")}`;
+}
+
 export function PublicHeader({
-  backLink,
   brandLinks = [],
-  overlay = false,
   settings,
   sticky = true,
 }: PublicHeaderProps) {
-  const [hasScrolled, setHasScrolled] = useState(false);
-  const logoUrl = settings.websiteLogoUrl || settings.logoUrl;
-  const solidHeaderClassName =
-    "border-b border-white/10 bg-[#1b1b1b]/72 shadow-xl shadow-black/10 backdrop-blur-xl";
-
-  useEffect(() => {
-    if (!overlay) return;
-
-    function updateScrollState() {
-      setHasScrolled(window.scrollY > 24);
-    }
-
-    updateScrollState();
-    window.addEventListener("scroll", updateScrollState, { passive: true });
-
-    return () => window.removeEventListener("scroll", updateScrollState);
-  }, [overlay]);
-
-  const headerClassName = overlay
-    ? `fixed left-0 top-0 z-[280] w-full px-4 text-white transition duration-300 sm:px-8 ${
-        hasScrolled
-          ? solidHeaderClassName
-          : "border-b border-transparent bg-transparent"
-      }`
-    : `z-[280] px-4 text-white ${solidHeaderClassName} sm:px-8 ${
-        sticky ? "sticky top-0" : "relative"
-      }`;
-  const linkClassName =
-    "inline-flex items-center gap-2 text-sm font-semibold text-white/78 transition hover:text-white";
-  const navClassName =
-    "hidden items-center gap-7 text-sm font-semibold text-white/78 lg:flex";
+  const logoUrl = settings.logoUrl || settings.websiteLogoUrl;
   const mobileLinks = brandLinks.length
-    ? navLinks.map(([label, href]) =>
-        label === "Marques"
+    ? navLinks.map((link) =>
+        link.label === "Marques"
           ? {
               children: [
-                { href, label: "Toutes les marques" },
+                { href: link.href, label: "Toutes les marques" },
                 ...brandLinks.map((brand) => ({
                   href: brand.href,
                   label: brand.label,
                 })),
               ],
-              href,
-              label,
+              href: link.href,
+              label: link.label,
             }
-          : { href, label },
+          : link,
       )
-    : mobileNavLinks;
+    : navLinks;
+  const headerClassName = `${
+    sticky ? "sticky top-0" : "relative"
+  } z-[280] border-b border-[#ececec] bg-white/96 text-[#24272c] shadow-[0_8px_28px_rgba(20,24,29,0.06)] backdrop-blur`;
 
   return (
     <header className={headerClassName}>
-      <nav className="mx-auto flex min-h-16 max-w-7xl items-center justify-between gap-4 py-3">
-        <Link className="flex min-w-0 items-center gap-3" href="/" aria-label={settings.companyName}>
+      <div className="mx-auto grid min-h-[86px] max-w-[1864px] grid-cols-[auto_1fr_auto] items-center gap-5 px-4 py-3 sm:px-8 xl:px-12">
+        <Link className="flex min-w-[150px] items-center gap-3 xl:min-w-[220px]" href="/" aria-label={settings.companyName}>
           {logoUrl ? (
             // eslint-disable-next-line @next/next/no-img-element
             <img
               alt={settings.companyName}
-              className="block shrink-0 object-contain"
+              className="block object-contain"
               height={settings.logoHeight}
               src={logoUrl}
               style={{
                 height: settings.logoHeight,
-                maxHeight: 52,
-                maxWidth: "min(58vw, 240px)",
+                maxHeight: 54,
+                maxWidth: "min(52vw, 184px)",
                 width: settings.logoWidth,
               }}
               width={settings.logoWidth}
             />
           ) : (
-            <span className="text-lg font-semibold tracking-tight">{settings.companyName}</span>
+            <span className="text-xl font-bold uppercase">{settings.companyName}</span>
           )}
         </Link>
 
-        <div className="flex items-center gap-3">
-          {backLink ? (
-            <Link
-              className={`${linkClassName} hidden sm:inline-flex`}
-              href={backLink.href}
-            >
-              <ChevronLeft className="h-4 w-4" />
-              {backLink.label}
+        <nav className="hidden items-center justify-center gap-8 text-[15px] font-semibold leading-5 lg:flex">
+          <Link className="inline-flex min-h-[58px] items-center text-[#a21d2f]" href="/#top">Accueil</Link>
+          <div className="group relative">
+            <Link className="inline-flex min-h-[58px] items-center gap-1 transition hover:text-[#a21d2f]" href="/marques">
+              Marques
+              <ChevronDown className="h-3.5 w-3.5 transition group-hover:rotate-180" />
             </Link>
-          ) : (
-            <div className={navClassName}>
-              {navLinks.map(([item, href]) => (
-                item === "Marques" ? (
-                  <div className="group relative" key={item}>
+            {brandLinks.length ? (
+              <div className="invisible absolute left-1/2 top-full z-[320] w-72 -translate-x-1/2 pt-3 opacity-0 transition duration-150 group-hover:visible group-hover:opacity-100 group-focus-within:visible group-focus-within:opacity-100">
+                <div className="rounded-md border border-[#ededed] bg-white p-2 shadow-[0_20px_45px_rgba(36,39,44,0.12)]">
+                  {brandLinks.map((brand) => (
                     <Link
-                      className="inline-flex items-center gap-1 whitespace-nowrap transition hover:text-white"
-                      href={href}
+                      className="flex min-h-10 items-center justify-between gap-3 rounded-md px-4 py-2.5 text-sm text-[#696665] transition hover:bg-[#f6f6f6] hover:text-[#a21d2f]"
+                      href={brand.href}
+                      key={brand.href}
                     >
-                      {item}
-                      <ChevronDown className="h-3.5 w-3.5 transition group-hover:rotate-180" />
+                      <span className="truncate">{brand.label}</span>
+                      <span className="shrink-0 rounded-full bg-[#f2f2f2] px-2 py-0.5 text-[11px] text-[#696665]">
+                        {brand.vehicleCount}
+                      </span>
                     </Link>
-                    {brandLinks.length ? (
-                      <div className="invisible absolute left-1/2 top-full z-[320] w-64 -translate-x-1/2 pt-3 opacity-0 transition duration-150 group-hover:visible group-hover:opacity-100 group-focus-within:visible group-focus-within:opacity-100">
-                        <div className="rounded-md border border-white/10 bg-[#14181d] p-2 shadow-2xl shadow-black/35">
-                          {brandLinks.map((brand) => (
-                            <Link
-                              className="flex min-h-10 items-center justify-between gap-3 rounded-md px-3 py-2 text-sm text-white/82 transition hover:bg-white/10 hover:text-white"
-                              href={brand.href}
-                              key={brand.href}
-                            >
-                              <span className="truncate">{brand.label}</span>
-                              <span className="shrink-0 rounded-full bg-white/10 px-2 py-0.5 text-[11px] text-white/62">
-                                {brand.vehicleCount}
-                              </span>
-                            </Link>
-                          ))}
-                        </div>
-                      </div>
-                    ) : null}
-                  </div>
-                ) : (
-                  <Link
-                    className="whitespace-nowrap transition hover:text-white"
-                    href={href}
-                    key={item}
-                  >
-                    {item}
-                  </Link>
-                )
-              ))}
+                  ))}
+                </div>
+              </div>
+            ) : null}
+          </div>
+          <div className="group relative">
+            <Link className="inline-flex min-h-[58px] items-center gap-1 transition hover:text-[#a21d2f]" href="/categories">
+              Explorer
+              <ChevronDown className="h-3.5 w-3.5 transition group-hover:rotate-180" />
+            </Link>
+            <div className="invisible absolute left-1/2 top-full z-[320] w-56 -translate-x-1/2 pt-3 opacity-0 transition duration-150 group-hover:visible group-hover:opacity-100 group-focus-within:visible group-focus-within:opacity-100">
+              <div className="rounded-md border border-[#ededed] bg-white p-2 shadow-[0_20px_45px_rgba(36,39,44,0.12)]">
+                <Link className="block rounded-md px-4 py-3 text-sm text-[#24272c] hover:bg-[#f6f6f6] hover:text-[#a21d2f]" href="/categories">
+                  Categories
+                </Link>
+                <Link className="block rounded-md px-4 py-3 text-sm text-[#24272c] hover:bg-[#f6f6f6] hover:text-[#a21d2f]" href="/avis">
+                  Avis
+                </Link>
+                <Link className="block rounded-md px-4 py-3 text-sm text-[#24272c] hover:bg-[#f6f6f6] hover:text-[#a21d2f]" href="/donner-un-avis">
+                  Donner un avis
+                </Link>
+              </div>
             </div>
-          )}
-          <PublicLanguageSwitch />
-          <PublicMobileMenu links={mobileLinks} />
+          </div>
+          <Link className="inline-flex min-h-[58px] items-center transition hover:text-[#a21d2f]" href="/#contact">Contact</Link>
+        </nav>
+
+        <div className="flex min-w-0 items-center justify-end gap-4 xl:min-w-[300px]">
+          <Link
+            aria-label="Search"
+            className="hidden h-11 w-11 items-center justify-center rounded-full border border-[#ededed] text-[#24272c] transition hover:border-[#a21d2f] hover:text-[#a21d2f] md:inline-flex"
+            href="/#vehicules"
+          >
+            <Search className="h-5 w-5" />
+          </Link>
+          <a
+            className="hidden items-center gap-2 text-sm font-semibold text-[#24272c] transition hover:text-[#a21d2f] xl:inline-flex"
+            href={phoneHref(settings.contactPhone)}
+          >
+            <Phone className="h-5 w-5" />
+            {settings.contactPhone}
+          </a>
+          <PublicLanguageSwitch variant="light" />
+          <PublicMobileMenu links={mobileLinks} variant="light" />
         </div>
-      </nav>
+      </div>
     </header>
   );
 }

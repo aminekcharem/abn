@@ -30,7 +30,7 @@ type VehicleGalleryProps = {
 const badgeStyles = {
   dark: "bg-[#1b1b1b] text-white",
   light: "bg-white text-[#1b1b1b]",
-  yellow: "bg-[#ffc10a] text-[#1b1b1b]",
+  yellow: "bg-[#a21d2f] text-white",
 };
 
 function getYouTubeVideoId(value: string) {
@@ -78,11 +78,11 @@ export function VehicleGallery({
     () => (images.length ? images : [{ alt: title, src: "/showroom-hero.png" }]),
     [images, title],
   );
-  const visibleThumbnailCount = Math.min(safeImages.length, 6);
+  const visibleThumbnailCount = Math.min(safeImages.length, 5);
   const thumbnailImages = safeImages.slice(0, visibleThumbnailCount);
-  const overlayIndex = visibleThumbnailCount === 6 ? 5 : -1;
+  const overlayIndex = visibleThumbnailCount === 5 ? 4 : -1;
   const hiddenImageCount =
-    safeImages.length > visibleThumbnailCount ? safeImages.length - 5 : 0;
+    safeImages.length > visibleThumbnailCount ? safeImages.length - 4 : 0;
   const activeImage = safeImages[activeIndex] ?? safeImages[0];
 
   const showImage = useCallback((index: number) => {
@@ -125,10 +125,10 @@ export function VehicleGallery({
 
   return (
     <div>
-      <div className="relative">
+      <div className="relative grid gap-3 lg:grid-cols-4 lg:grid-rows-2">
         <button
           aria-label={`Agrandir ${activeImage.alt}`}
-          className="group relative block h-[360px] w-full overflow-hidden rounded-md bg-white text-left sm:h-[520px]"
+          className="group relative block h-[360px] w-full overflow-hidden rounded-md bg-white text-left sm:h-[520px] lg:col-span-2 lg:row-span-2 lg:h-[560px]"
           data-testid="vehicle-gallery-main"
           onClick={() => openLightbox(activeIndex)}
           type="button"
@@ -144,6 +144,50 @@ export function VehicleGallery({
           />
         </button>
 
+        <div className="hidden gap-3 lg:col-span-2 lg:row-span-2 lg:grid lg:grid-cols-2">
+          {thumbnailImages.slice(1).map((image, index) => {
+            const imageIndex = index + 1;
+            const isOverlayTile = imageIndex === overlayIndex && hiddenImageCount > 0;
+
+            return (
+              <button
+                aria-label={
+                  isOverlayTile
+                    ? `Voir toutes les images de ${title}`
+                    : `Afficher ${image.alt}`
+                }
+                className="group relative min-h-0 overflow-hidden rounded-md bg-white text-left"
+                key={`${image.src}-mosaic-${imageIndex}`}
+                onClick={() => {
+                  if (isOverlayTile) {
+                    openLightbox(imageIndex);
+                    return;
+                  }
+
+                  showImage(imageIndex);
+                }}
+                type="button"
+              >
+                <Image
+                  alt={image.alt}
+                  className="object-cover transition duration-300 group-hover:scale-105"
+                  fill
+                  loading="lazy"
+                  sizes="(max-width: 1024px) 0vw, 310px"
+                  src={image.src}
+                  unoptimized
+                />
+
+                {isOverlayTile ? (
+                  <span className="absolute inset-0 grid place-items-center bg-black/55 text-2xl font-semibold text-white">
+                    +{hiddenImageCount}
+                  </span>
+                ) : null}
+              </button>
+            );
+          })}
+        </div>
+
         <div className="absolute left-5 top-5 flex flex-wrap gap-2">
           {badges.map((badge) => (
             <span
@@ -158,7 +202,7 @@ export function VehicleGallery({
           ))}
         </div>
         <button
-          className="absolute bottom-5 right-5 inline-flex items-center gap-2 rounded-full bg-white px-4 py-2 text-xs font-semibold text-[#1b1b1b] shadow-sm transition hover:bg-[#ffc10a]"
+          className="absolute bottom-5 right-5 inline-flex items-center gap-2 rounded-md bg-white px-4 py-2 text-xs font-semibold text-[#1b1b1b] shadow-sm transition hover:bg-[#a21d2f] hover:text-white"
           onClick={() => openLightbox(activeIndex)}
           type="button"
         >
@@ -168,7 +212,7 @@ export function VehicleGallery({
       </div>
 
       {safeImages.length > 1 ? (
-        <div className="mt-3 grid grid-cols-3 gap-3 sm:grid-cols-6">
+        <div className="mt-3 grid grid-cols-3 gap-3 sm:grid-cols-5 lg:hidden">
           {thumbnailImages.map((image, index) => {
             const isOverlayTile = index === overlayIndex && hiddenImageCount > 0;
 
@@ -181,7 +225,7 @@ export function VehicleGallery({
                 }
                 className={`group relative aspect-[4/3] overflow-hidden rounded-md bg-white ring-offset-2 transition ${
                   activeIndex === index && !isOverlayTile
-                    ? "ring-2 ring-[#ffc10a]"
+                    ? "ring-2 ring-[#a21d2f]"
                     : "opacity-80 hover:opacity-100"
                 }`}
                 data-testid="vehicle-gallery-thumbnail"
@@ -257,7 +301,7 @@ export function VehicleGallery({
         >
           <button
             aria-label="Fermer la galerie"
-            className="fixed right-3 top-3 z-[510] inline-flex h-10 items-center gap-2 rounded-full bg-white px-3 text-sm font-semibold text-[#1b1b1b] shadow-lg transition hover:bg-[#ffc10a] md:right-4 md:top-4 md:h-11 md:w-11 md:justify-center md:px-0"
+            className="fixed right-3 top-3 z-[510] inline-flex h-10 items-center gap-2 rounded-full bg-white px-3 text-sm font-semibold text-[#1b1b1b] shadow-lg transition hover:bg-[#a21d2f] md:right-4 md:top-4 md:h-11 md:w-11 md:justify-center md:px-0"
             data-testid="vehicle-gallery-close"
             onClick={() => setIsLightboxOpen(false)}
             type="button"
@@ -290,7 +334,7 @@ export function VehicleGallery({
             <div className="hidden md:block">
               <button
                 aria-label="Image précédente"
-                className="absolute left-4 top-1/2 z-10 grid h-11 w-11 -translate-y-1/2 place-items-center rounded-full bg-white text-[#1b1b1b] transition hover:bg-[#ffc10a]"
+                className="absolute left-4 top-1/2 z-10 grid h-11 w-11 -translate-y-1/2 place-items-center rounded-full bg-white text-[#1b1b1b] transition hover:bg-[#a21d2f]"
                 data-testid="vehicle-gallery-prev"
                 onClick={() => showImage(activeIndex - 1)}
                 type="button"
@@ -299,7 +343,7 @@ export function VehicleGallery({
               </button>
               <button
                 aria-label="Image suivante"
-                className="absolute right-4 top-1/2 z-10 grid h-11 w-11 -translate-y-1/2 place-items-center rounded-full bg-white text-[#1b1b1b] transition hover:bg-[#ffc10a]"
+                className="absolute right-4 top-1/2 z-10 grid h-11 w-11 -translate-y-1/2 place-items-center rounded-full bg-white text-[#1b1b1b] transition hover:bg-[#a21d2f]"
                 data-testid="vehicle-gallery-next"
                 onClick={() => showImage(activeIndex + 1)}
                 type="button"

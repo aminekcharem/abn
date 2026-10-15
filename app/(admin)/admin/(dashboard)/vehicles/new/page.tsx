@@ -2,7 +2,6 @@ import {
   VehicleForm,
   type VehicleFormInitialData,
   type VehicleMediaLibraryAsset,
-  type VehicleReportLibraryAsset,
 } from "../vehicle-form";
 import { getPrisma } from "@/lib/prisma";
 
@@ -20,9 +19,6 @@ const initialData: VehicleFormInitialData = {
   motorization: "",
   price: "",
   priceCurrency: "TND",
-  transportIncluded: true,
-  transportPrice: "",
-  transportCurrency: "TND",
   year: "",
   firstRegistrationDate: "",
   status: "DISPONIBLE",
@@ -44,7 +40,6 @@ const initialData: VehicleFormInitialData = {
   optionIds: [],
   images: [],
   videos: [],
-  inspectionReportUrl: "",
   description: "",
 };
 
@@ -92,27 +87,12 @@ async function getFormOptions() {
         },
       },
     });
-    const reportAssets = await prisma.mediaAsset.findMany({
-      orderBy: { createdAt: "desc" },
-      select: {
-        id: true,
-        localPath: true,
-        originalName: true,
-        title: true,
-      },
-      take: 80,
-      where: {
-        mimeType: "application/pdf",
-      },
-    });
-
     return {
       brands,
       categories,
       hasDatabaseError: false,
       mediaAssets: mediaAssets as VehicleMediaLibraryAsset[],
       options,
-      reportAssets: reportAssets as VehicleReportLibraryAsset[],
     };
   } catch {
     return {
@@ -121,13 +101,12 @@ async function getFormOptions() {
       hasDatabaseError: true,
       mediaAssets: [],
       options: [],
-      reportAssets: [],
     };
   }
 }
 
 export default async function NewVehiclePage() {
-  const { brands, categories, hasDatabaseError, mediaAssets, options, reportAssets } =
+  const { brands, categories, hasDatabaseError, mediaAssets, options } =
     await getFormOptions();
 
   return (
@@ -142,7 +121,7 @@ export default async function NewVehiclePage() {
       </div>
 
       {hasDatabaseError ? (
-        <div className="rounded-md border border-orange-500/30 bg-orange-500/10 px-4 py-3 text-sm text-orange-100">
+        <div className="rounded-md border border-[#a21d2f]/30 bg-[#a21d2f]/10 px-4 py-3 text-sm text-[#a21d2f]">
           Connexion MySQL indisponible. Demarrez MySQL puis appliquez les
           migrations pour charger les marques, categories et options.
         </div>
@@ -155,7 +134,6 @@ export default async function NewVehiclePage() {
         mediaAssets={mediaAssets}
         mode="create"
         options={options}
-        reportAssets={reportAssets}
       />
     </div>
   );

@@ -1,6 +1,14 @@
+import { existsSync } from "node:fs";
+import path from "node:path";
+
 import { getMediaUrl } from "@/lib/cdn";
 import { getPrisma } from "@/lib/prisma";
 import { unstable_cache } from "next/cache";
+
+const defaultAdminLogoPath =
+  "/uploads/settings/1782313204377-1def4e9f-8e5b-4c94-969f-eb788dff278d-logo-autopro-dark-bg-02.svg";
+const defaultWebsiteLogoPath =
+  "/uploads/settings/1782395026222-b8c771e0-c576-4590-8817-0074626793eb-logo-autopro-white.svg";
 
 export type ShowroomSettingsView = {
   adminTheme: "DARK" | "LIGHT";
@@ -22,8 +30,8 @@ export type ShowroomSettingsView = {
 
 export const defaultShowroomSettings: ShowroomSettingsView = {
   adminTheme: "DARK",
-  authLogoPath: null,
-  authLogoUrl: null,
+  authLogoPath: defaultAdminLogoPath,
+  authLogoUrl: getMediaUrl(defaultAdminLogoPath),
   companyName: "AutoPro Showroom",
   contactEmail: "contact@autopro.test",
   contactPhone: "+216 00 000 000",
@@ -31,11 +39,11 @@ export const defaultShowroomSettings: ShowroomSettingsView = {
   instagramUrl: null,
   showFloatingBar: true,
   logoHeight: 48,
-  logoPath: null,
-  logoUrl: null,
+  logoPath: defaultAdminLogoPath,
+  logoUrl: getMediaUrl(defaultAdminLogoPath),
   logoWidth: 160,
-  websiteLogoPath: null,
-  websiteLogoUrl: null,
+  websiteLogoPath: defaultWebsiteLogoPath,
+  websiteLogoUrl: getMediaUrl(defaultWebsiteLogoPath),
 };
 
 type ShowroomSettingsRecord = {
@@ -69,6 +77,31 @@ function getShowroomSettingsDelegate() {
   return prisma.showroomSettings;
 }
 
+function localMediaPathExists(pathOrUrl: string | null) {
+  if (!pathOrUrl) {
+    return false;
+  }
+
+  if (/^https?:\/\//i.test(pathOrUrl)) {
+    return true;
+  }
+
+  const mediaUrl = getMediaUrl(pathOrUrl);
+
+  if (!mediaUrl.startsWith("/uploads/")) {
+    return true;
+  }
+
+  return existsSync(path.join(process.cwd(), "public", mediaUrl));
+}
+
+function resolveLogoPath(
+  pathOrUrl: string | null,
+  fallbackPath: string | null,
+) {
+  return localMediaPathExists(pathOrUrl) ? pathOrUrl : fallbackPath;
+}
+
 async function readShowroomSettings(): Promise<ShowroomSettingsView> {
   try {
     const showroomSettings = getShowroomSettingsDelegate();
@@ -96,25 +129,35 @@ async function readShowroomSettings(): Promise<ShowroomSettingsView> {
       update: {},
       where: { id: "main" },
     });
+    const logoPath = resolveLogoPath(
+      settings.logoUrl,
+      defaultShowroomSettings.logoPath,
+    );
+    const websiteLogoPath = resolveLogoPath(
+      settings.websiteLogoUrl,
+      defaultShowroomSettings.websiteLogoPath,
+    );
+    const authLogoPath = resolveLogoPath(
+      settings.authLogoUrl,
+      logoPath || defaultShowroomSettings.authLogoPath,
+    );
 
     return {
       companyName: settings.companyName,
       adminTheme: settings.adminTheme,
-      authLogoPath: settings.authLogoUrl,
-      authLogoUrl: settings.authLogoUrl ? getMediaUrl(settings.authLogoUrl) : null,
+      authLogoPath,
+      authLogoUrl: authLogoPath ? getMediaUrl(authLogoPath) : null,
       contactEmail: settings.contactEmail,
       contactPhone: settings.contactPhone,
       facebookUrl: settings.facebookUrl,
       instagramUrl: settings.instagramUrl,
       showFloatingBar: settings.showFloatingBar,
       logoHeight: settings.logoHeight,
-      logoPath: settings.logoUrl,
-      logoUrl: settings.logoUrl ? getMediaUrl(settings.logoUrl) : null,
+      logoPath,
+      logoUrl: logoPath ? getMediaUrl(logoPath) : null,
       logoWidth: settings.logoWidth,
-      websiteLogoPath: settings.websiteLogoUrl,
-      websiteLogoUrl: settings.websiteLogoUrl
-        ? getMediaUrl(settings.websiteLogoUrl)
-        : null,
+      websiteLogoPath,
+      websiteLogoUrl: websiteLogoPath ? getMediaUrl(websiteLogoPath) : null,
     };
   } catch {
     return defaultShowroomSettings;

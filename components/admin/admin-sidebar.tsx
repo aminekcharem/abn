@@ -107,7 +107,7 @@ export function AdminSidebar({
             width={brand.logoWidth}
           />
         ) : (
-          <span className="grid h-10 w-10 shrink-0 place-items-center rounded-md bg-[#ffc10a] text-sm font-semibold text-[#050b20]">
+          <span className="grid h-10 w-10 shrink-0 place-items-center rounded-md bg-[#a21d2f] text-sm font-semibold text-white">
             {brand.companyName.slice(0, 2).toUpperCase()}
           </span>
         )}
@@ -130,7 +130,7 @@ export function AdminSidebar({
               <Link
                 className={cn(
                   "flex h-11 items-center gap-3 rounded-md px-3 text-sm font-medium text-zinc-400 transition hover:bg-white/5 hover:text-white",
-                  isActive && "bg-[#ffc10a] text-[#050b20] shadow-lg shadow-yellow-950/20",
+                  isActive && "bg-[#a21d2f] text-white shadow-lg shadow-[#a21d2f]/20",
                   activePendingHref === item.href && "bg-white/10 text-white",
                 )}
                 href={item.href}
@@ -172,3 +172,4 @@ export function AdminSidebar({
     </aside>
   );
 }
+

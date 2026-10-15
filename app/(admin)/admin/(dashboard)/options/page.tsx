@@ -71,7 +71,7 @@ export default async function AdminOptionsPage() {
                 <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_420px]">
                   <div>
                     <div className="flex items-start gap-3">
-                      <span className="grid h-10 w-10 shrink-0 place-items-center rounded-md border border-zinc-800 bg-zinc-900 text-[#ffc10a]">
+                      <span className="grid h-10 w-10 shrink-0 place-items-center rounded-md border border-zinc-800 bg-zinc-900 text-[#a21d2f]">
                         {category.iconSvg ? (
                           <span
                             className="grid h-5 w-5 place-items-center [&_svg]:h-5 [&_svg]:w-5"
@@ -93,7 +93,7 @@ export default async function AdminOptionsPage() {
                           <Badge
                             className={
                               category.isActive
-                                ? "border-[#ffc10a]/40 bg-[#ffc10a]/10 text-[#ffc10a]"
+                                ? "border-[#a21d2f]/40 bg-[#a21d2f]/10 text-[#a21d2f]"
                                 : "border-zinc-700 bg-zinc-800 text-zinc-400"
                             }
                             variant="outline"
@@ -180,7 +180,7 @@ export default async function AdminOptionsPage() {
                         Remplacer l&apos;icone SVG
                         <input
                           accept="image/svg+xml"
-                          className="rounded-md border border-zinc-800 bg-black px-3 py-2 text-xs text-zinc-100 file:mr-3 file:rounded-md file:border-0 file:bg-[#ffc10a] file:px-3 file:py-1.5 file:text-xs file:font-semibold file:text-[#050b20]"
+                          className="rounded-md border border-zinc-800 bg-black px-3 py-2 text-xs text-zinc-100 file:mr-3 file:rounded-md file:border-0 file:bg-[#a21d2f] file:px-3 file:py-1.5 file:text-xs file:font-semibold file:text-white"
                           name="iconSvgFile"
                           type="file"
                         />
@@ -196,7 +196,7 @@ export default async function AdminOptionsPage() {
                         </label>
                       ) : null}
                       <Button
-                        className="w-max bg-[#ffc10a] text-[#050b20] hover:bg-[#050b20] hover:text-white"
+                        className="w-max bg-[#a21d2f] text-white hover:bg-[#050b20] hover:text-white"
                         type="submit"
                       >
                         Enregistrer categorie
@@ -222,7 +222,7 @@ export default async function AdminOptionsPage() {
                     required
                   />
                   <Button
-                    className="bg-[#ffc10a] text-[#050b20] hover:bg-[#050b20] hover:text-white"
+                    className="bg-[#a21d2f] text-white hover:bg-[#050b20] hover:text-white"
                     type="submit"
                   >
                     Ajouter option
@@ -247,3 +247,4 @@ const inputClass =
   "h-10 rounded-md border border-zinc-800 bg-zinc-950 px-3 text-sm text-zinc-100 outline-none ring-primary/30 transition focus:ring-4";
 
 const labelClass = "grid gap-2 text-sm font-medium text-zinc-200";
+

@@ -6,6 +6,10 @@ import { CalendarDays, Fuel, Gauge, Heart } from "lucide-react";
 import { useCallback, useMemo, useState } from "react";
 
 import { getMediaUrl } from "@/lib/cdn";
+import {
+  getVehicleStatusBadgeClassName,
+  type PublicVehicleStatus,
+} from "@/lib/public-vehicle-status";
 
 export type BrandFilterVehicle = {
   brandName: string;
@@ -17,6 +21,7 @@ export type BrandFilterVehicle = {
   model: string;
   priceLabel: string;
   slug: string;
+  status: PublicVehicleStatus;
   statusLabel: string;
   title: string;
   transmission: string | null;
@@ -110,7 +115,7 @@ export function BrandVehicleFilter({
 
   return (
     <>
-      <div className="mb-7 rounded-md border border-[#1b1b1b]/10 bg-white p-5 shadow-sm">
+      <div className="mb-7 rounded-md border border-[#e3e4e1] bg-white p-5 shadow-[0_12px_34px_rgba(20,24,29,0.06)]">
         <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
           <SelectField
             label="Modèle"
@@ -146,7 +151,7 @@ export function BrandVehicleFilter({
             {filteredVehicles.length} résultat(s)
           </span>
           <button
-            className="rounded-md border border-[#1b1b1b]/10 px-4 py-2 text-xs font-semibold text-[#1b1b1b]/60 transition hover:border-[#ffc10a] hover:text-[#1b1b1b]"
+            className="rounded-md border border-[#1b1b1b]/10 px-4 py-2 text-xs font-semibold text-[#1b1b1b]/60 transition hover:border-[#a21d2f] hover:text-[#a21d2f]"
             onClick={() => setFilters(emptyFilters)}
             type="button"
           >
@@ -192,7 +197,7 @@ function SelectField({
         {label}
       </span>
       <select
-        className="w-full rounded-md border border-[#1b1b1b]/10 bg-white px-3 py-2.5 text-sm text-[#1b1b1b] outline-none transition focus:border-[#ffc10a]"
+        className="w-full rounded-md border border-[#1b1b1b]/10 bg-white px-3 py-2.5 text-sm text-[#1b1b1b] outline-none transition focus:border-[#a21d2f]"
         onChange={(event) => onChange(event.target.value)}
         value={value}
       >
@@ -209,8 +214,8 @@ function SelectField({
 
 function VehicleCard({ vehicle }: { vehicle: BrandFilterVehicle }) {
   return (
-    <article className="group overflow-hidden rounded-md border border-[#1b1b1b]/10 bg-white shadow-sm transition hover:-translate-y-1 hover:shadow-xl hover:shadow-[#1b1b1b]/10">
-      <Link className="block" href={`/vehicles/${vehicle.slug}`}>
+    <article className="group overflow-hidden rounded-md border border-[#ececec] bg-white shadow-[0_10px_28px_rgba(20,24,29,0.05)] transition hover:-translate-y-1 hover:border-[#a21d2f]/35 hover:shadow-[0_18px_42px_rgba(20,24,29,0.1)]">
+      <Link className="block" href={`/vehicules/${vehicle.slug}`}>
         <div className="relative h-56 overflow-hidden bg-white">
           <Image
             alt={vehicle.title}
@@ -219,7 +224,7 @@ function VehicleCard({ vehicle }: { vehicle: BrandFilterVehicle }) {
             sizes="(max-width: 1280px) 50vw, 33vw"
             src={vehicle.image ? getMediaUrl(vehicle.image) : "/showroom-hero.png"}
           />
-          <span className="absolute left-4 top-4 rounded-full bg-[#ffc10a] px-3 py-1 text-xs font-semibold text-[#1b1b1b]">
+          <span className={`absolute left-4 top-4 ${getVehicleStatusBadgeClassName(vehicle.status)}`}>
             {vehicle.statusLabel}
           </span>
           <span className="absolute right-4 top-4 grid h-8 w-8 place-items-center rounded-full bg-white text-[#1b1b1b]">
@@ -260,7 +265,7 @@ function VehicleCard({ vehicle }: { vehicle: BrandFilterVehicle }) {
 
           <div className="mt-4 flex items-center justify-between gap-3">
             <p className="font-semibold">{vehicle.priceLabel}</p>
-            <span className="text-xs font-semibold text-[#1b1b1b] underline decoration-[#ffc10a] underline-offset-4">
+            <span className="inline-flex min-h-9 items-center rounded-md border border-[#ececec] px-3 text-xs font-semibold text-[#1b1b1b] transition group-hover:border-[#a21d2f] group-hover:text-[#a21d2f]">
               Voir le détail
             </span>
           </div>

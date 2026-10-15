@@ -15,14 +15,12 @@ import {
   ArrowDown,
   ArrowUp,
   CheckCircle2,
-  FileText,
   Film,
   ImagePlus,
   Images,
   Link2,
   Loader2,
   Save,
-  WandSparkles,
   X,
   XCircle,
 } from "lucide-react";
@@ -57,13 +55,6 @@ export type VehicleMediaLibraryAsset = {
   title: string | null;
 };
 
-export type VehicleReportLibraryAsset = {
-  id: string;
-  localPath: string;
-  originalName: string;
-  title: string | null;
-};
-
 export type VehicleFormInitialData = {
   id?: string;
   title: string;
@@ -77,9 +68,6 @@ export type VehicleFormInitialData = {
   motorization: string;
   price: string;
   priceCurrency: "TND" | "EUR";
-  transportIncluded: boolean;
-  transportPrice: string;
-  transportCurrency: "TND" | "EUR";
   year: string;
   firstRegistrationDate: string;
   status: "BROUILLON" | "DISPONIBLE" | "VENDU" | "RESERVE";
@@ -101,7 +89,6 @@ export type VehicleFormInitialData = {
   optionIds: string[];
   images: string[];
   videos: string[];
-  inspectionReportUrl: string;
   description: string;
 };
 
@@ -113,17 +100,11 @@ type VideoItem =
   | { key: string; type: "existing"; url: string }
   | { key: string; type: "new"; url: string; file: File };
 
-type InspectionReportItem =
-  | { type: "existing"; url: string }
-  | { type: "new"; file: File }
-  | null;
-
 type VehicleFormProps = {
   mode: "create" | "edit";
   brands: SelectOption[];
   categories: SelectOption[];
   mediaAssets: VehicleMediaLibraryAsset[];
-  reportAssets: VehicleReportLibraryAsset[];
   options: EquipmentOption[];
   initialData: VehicleFormInitialData;
 };
@@ -150,14 +131,11 @@ const fieldLabels: Record<string, string> = {
   engine: "Type moteur",
   engineCode: "Code moteur",
   existingImages: "Images existantes",
-  existingInspectionReportUrl: "Rapport d'inspection existant",
   firstRegistrationDate: "Date de mise en circulation",
   fuelType: "Carburant",
   gearbox: "Boite de vitesses",
   generation: "Generation",
   images: "Images",
-  inspectionReport: "Rapport d'inspection",
-  inspectionReportUrl: "Rapport d'inspection",
   videos: "Videos",
   isFeatured: "Mise en avant",
   isNew: "Nouveau",
@@ -174,9 +152,6 @@ const fieldLabels: Record<string, string> = {
   status: "Statut",
   title: "Titre",
   transmission: "Transmission",
-  transportCurrency: "Devise du transport",
-  transportIncluded: "Transport inclus jusqu'a port Rades",
-  transportPrice: "Prix de transport",
   trim: "Finition",
   vin: "VIN",
   year: "Annee",
@@ -207,194 +182,6 @@ function getFieldErrorSummary(state: VehicleActionState) {
       label: fieldLabels[field] ?? field,
     })),
   );
-}
-
-function normalizeComparable(value: string) {
-  return value
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, " ")
-    .trim();
-}
-
-function getMatchedLineValue(text: string, labels: string[]) {
-  const normalizedLabels = labels.map(normalizeComparable);
-  const lines = text
-    .split(/\r?\n/)
-    .map((line) => line.trim())
-    .filter(Boolean);
-
-  for (const line of lines) {
-    const normalizedLine = normalizeComparable(line);
-    const matchedLabel = normalizedLabels.find((label) =>
-      normalizedLine.startsWith(label),
-    );
-
-    if (!matchedLabel) continue;
-
-    const separators = [":", "：", "=", "-"];
-    const separatorIndex = separators
-      .map((separator) => line.indexOf(separator))
-      .filter((index) => index >= 0)
-      .sort((first, second) => first - second)[0];
-
-    if (separatorIndex >= 0) {
-      return line.slice(separatorIndex + 1).trim();
-    }
-
-    return line
-      .split(/\s+/)
-      .slice(matchedLabel.split(" ").length)
-      .join(" ")
-      .trim();
-  }
-
-  return "";
-}
-
-function firstMatch(text: string, patterns: RegExp[]) {
-  for (const pattern of patterns) {
-    const match = text.match(pattern);
-    const value = match?.[1]?.trim();
-
-    if (value) return value;
-  }
-
-  return "";
-}
-
-function parseNumericText(value: string) {
-  const match = value.match(/\d[\d\s.,]*/);
-  if (!match) return "";
-
-  const normalized = match[0]
-    .replace(/\s/g, "")
-    .replace(",", ".");
-
-  return normalized;
-}
-
-function parseIntegerText(value: string) {
-  const parsed = parseNumericText(value);
-
-  return parsed ? String(Math.round(Number(parsed))) : "";
-}
-
-function parseFuelType(value: string) {
-  const normalized = normalizeComparable(value);
-
-  if (normalized.includes("diesel")) return "DIESEL";
-  if (normalized.includes("hybride") || normalized.includes("hybrid")) return "HYBRIDE";
-  if (
-    normalized.includes("electrique") ||
-    normalized.includes("electric") ||
-    normalized.includes("ev")
-  ) {
-    return "ELECTRIQUE";
-  }
-  if (normalized.includes("essence") || normalized.includes("petrol") || normalized.includes("gasoline")) {
-    return "ESSENCE";
-  }
-
-  return "";
-}
-
-function parseFirstRegistrationDate(value: string) {
-  const isoDate = value.match(/\b(\d{4})-(\d{1,2})-(\d{1,2})\b/);
-  if (isoDate) {
-    return `${isoDate[1]}-${isoDate[2].padStart(2, "0")}-${isoDate[3].padStart(2, "0")}`;
-  }
-
-  const frenchDate = value.match(/\b(\d{1,2})[/. -](\d{1,2})[/. -](\d{4})\b/);
-  if (frenchDate) {
-    return `${frenchDate[3]}-${frenchDate[2].padStart(2, "0")}-${frenchDate[1].padStart(2, "0")}`;
-  }
-
-  const monthYear = value.match(/\b(\d{1,2})[/. -](\d{4})\b/);
-  if (monthYear) {
-    return `${monthYear[2]}-${monthYear[1].padStart(2, "0")}-01`;
-  }
-
-  return "";
-}
-
-function buildTitleFromParsedFields(fields: Record<string, string>) {
-  return [fields.brand, fields.model, fields.trim, fields.year]
-    .filter(Boolean)
-    .join(" ");
-}
-
-function parseVehicleImportText(text: string) {
-  const title = getMatchedLineValue(text, ["titre", "title", "nom", "vehicule", "véhicule"]);
-  const brand = getMatchedLineValue(text, ["marque", "brand", "make"]);
-  const model = getMatchedLineValue(text, ["modele", "modèle", "model"]);
-  const generation = getMatchedLineValue(text, ["generation", "génération"]);
-  const trim = getMatchedLineValue(text, ["finition", "version", "trim"]);
-  const engineCode = getMatchedLineValue(text, ["code moteur", "engine code"]);
-  const motorization = getMatchedLineValue(text, ["motorisation", "motorization"]);
-  const displacement = getMatchedLineValue(text, ["cylindree", "cylindrée", "displacement"]);
-  const engine = getMatchedLineValue(text, ["type moteur", "moteur", "engine"]);
-  const priceText =
-    getMatchedLineValue(text, ["prix", "price"]) ||
-    firstMatch(text, [/(?:prix|price)\s*[:=-]?\s*([0-9\s.,]+)\s*(?:tnd|eur|€)?/i]);
-  const yearText =
-    getMatchedLineValue(text, ["annee", "année", "year"]) ||
-    firstMatch(text, [/\b(20\d{2}|19\d{2})\b/]);
-  const mileageText =
-    getMatchedLineValue(text, ["kilometrage", "kilométrage", "mileage", "km"]) ||
-    firstMatch(text, [/(?:kilometrage|kilométrage|mileage)\s*[:=-]?\s*([0-9\s.,]+)\s*km/i]);
-  const fuelText = getMatchedLineValue(text, ["carburant", "fuel", "energie", "énergie"]);
-  const gearbox = getMatchedLineValue(text, ["boite", "boîte", "gearbox", "boite de vitesses"]);
-  const transmission = getMatchedLineValue(text, ["transmission"]);
-  const firstRegistrationDate = getMatchedLineValue(text, [
-    "mise en circulation",
-    "date de mise en circulation",
-    "premiere immatriculation",
-    "première immatriculation",
-    "first registration",
-  ]);
-  const colorName = getMatchedLineValue(text, ["couleur", "color"]);
-  const registration = getMatchedLineValue(text, ["immatriculation", "registration"]);
-  const vin = getMatchedLineValue(text, ["vin", "numero de chassis", "numéro de châssis", "chassis"]);
-  const power = getMatchedLineValue(text, ["puissance", "power"]);
-  const doors = getMatchedLineValue(text, ["portes", "doors"]);
-  const seats = getMatchedLineValue(text, ["places", "sieges", "sièges", "seats"]);
-  const category = getMatchedLineValue(text, ["categorie", "catégorie", "type", "body"]);
-  const description = getMatchedLineValue(text, ["description", "commentaire", "details", "détails"]);
-  const currency = /€|eur/i.test(priceText) ? "EUR" : /tnd|dt|dinar/i.test(priceText) ? "TND" : "";
-  const parsedFields = {
-    brand,
-    category,
-    colorName,
-    description,
-    displacement,
-    doors: parseIntegerText(doors),
-    engine,
-    engineCode,
-    firstRegistrationDate: parseFirstRegistrationDate(firstRegistrationDate),
-    fuelType: parseFuelType(fuelText),
-    gearbox,
-    generation,
-    mileage: parseIntegerText(mileageText),
-    model,
-    motorization,
-    power: parseIntegerText(power),
-    price: parseNumericText(priceText),
-    priceCurrency: currency,
-    registration,
-    seats: parseIntegerText(seats),
-    title,
-    transmission,
-    trim,
-    vin,
-    year: parseIntegerText(yearText),
-  };
-
-  return {
-    ...parsedFields,
-    title: parsedFields.title || buildTitleFromParsedFields(parsedFields),
-  };
 }
 
 function getYouTubeVideoId(value: string) {
@@ -441,13 +228,10 @@ export function VehicleForm({
   mediaAssets,
   mode,
   options,
-  reportAssets,
 }: VehicleFormProps) {
   const router = useRouter();
-  const formRef = useRef<HTMLFormElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const videoInputRef = useRef<HTMLInputElement>(null);
-  const inspectionReportInputRef = useRef<HTMLInputElement>(null);
   const [isSubmitting, startSubmitTransition] = useTransition();
   const action =
     mode === "edit" && initialData.id
@@ -456,19 +240,8 @@ export function VehicleForm({
   const [state, formAction] = useActionState(action, emptyActionState);
   const [slugTouched, setSlugTouched] = useState(Boolean(initialData.slug));
   const [slug, setSlug] = useState(initialData.slug);
-  const [transportIncluded, setTransportIncluded] = useState(
-    initialData.transportIncluded,
-  );
-  const [vehicleSourceText, setVehicleSourceText] = useState("");
-  const [vehicleSourceFeedback, setVehicleSourceFeedback] = useState("");
   const [showMediaLibrary, setShowMediaLibrary] = useState(false);
-  const [showReportLibrary, setShowReportLibrary] = useState(false);
   const [youtubeUrl, setYoutubeUrl] = useState("");
-  const [inspectionReport, setInspectionReport] = useState<InspectionReportItem>(
-    initialData.inspectionReportUrl
-      ? { type: "existing", url: initialData.inspectionReportUrl }
-      : null,
-  );
   const [images, setImages] = useState<ImageItem[]>(
     initialData.images.map((url) => ({
       key: `existing-${url}`,
@@ -650,27 +423,6 @@ export function VehicleForm({
     setYoutubeUrl("");
   }
 
-  function addInspectionReportFile(files: FileList | null) {
-    const file = files?.[0];
-    if (!file) return;
-
-    if (file.type !== "application/pdf") {
-      window.alert("Le rapport d'inspection doit etre un fichier PDF.");
-      return;
-    }
-
-    setInspectionReport({ file, type: "new" });
-
-    if (inspectionReportInputRef.current) {
-      inspectionReportInputRef.current.value = "";
-    }
-  }
-
-  function addReportAsset(asset: VehicleReportLibraryAsset) {
-    setInspectionReport({ type: "existing", url: asset.localPath });
-    setShowReportLibrary(false);
-  }
-
   function moveImage(index: number, direction: -1 | 1) {
     setImages((current) => {
       const target = index + direction;
@@ -717,16 +469,6 @@ export function VehicleForm({
     });
   }
 
-  function removeInspectionReport() {
-    const confirmed = window.confirm(
-      "Retirer le rapport d'inspection de la fiche du vehicule ?",
-    );
-
-    if (confirmed) {
-      setInspectionReport(null);
-    }
-  }
-
   function submitForm(formData: FormData) {
     for (const image of images) {
       if (image.type === "existing") {
@@ -742,112 +484,9 @@ export function VehicleForm({
         formData.append("videos", video.file);
       }
     }
-    if (inspectionReport?.type === "existing") {
-      formData.append("existingInspectionReportUrl", inspectionReport.url);
-    } else if (inspectionReport?.type === "new") {
-      formData.append("inspectionReport", inspectionReport.file);
-    }
-
     startSubmitTransition(() => {
       formAction(formData);
     });
-  }
-
-  function setTextFieldValue(name: string, value: string) {
-    if (!value) return false;
-
-    const field = formRef.current?.elements.namedItem(name);
-
-    if (
-      field instanceof HTMLInputElement ||
-      field instanceof HTMLTextAreaElement
-    ) {
-      field.value = value;
-      field.dispatchEvent(new Event("input", { bubbles: true }));
-      field.dispatchEvent(new Event("change", { bubbles: true }));
-      return true;
-    }
-
-    return false;
-  }
-
-  function setSelectValue(name: string, value: string) {
-    if (!value) return false;
-
-    const field = formRef.current?.elements.namedItem(name);
-    if (!(field instanceof HTMLSelectElement)) return false;
-
-    const normalizedValue = normalizeComparable(value);
-    const matchedOption = Array.from(field.options).find((option) => {
-      const normalizedLabel = normalizeComparable(option.textContent || "");
-      const normalizedOptionValue = normalizeComparable(option.value);
-
-      return (
-        normalizedLabel === normalizedValue ||
-        normalizedOptionValue === normalizedValue ||
-        normalizedLabel.includes(normalizedValue) ||
-        normalizedValue.includes(normalizedLabel)
-      );
-    });
-
-    if (!matchedOption || !matchedOption.value) return false;
-
-    field.value = matchedOption.value;
-    field.dispatchEvent(new Event("change", { bubbles: true }));
-    return true;
-  }
-
-  function applyVehicleSourceText() {
-    const parsed = parseVehicleImportText(vehicleSourceText);
-    let updatedFields = 0;
-
-    if (!vehicleSourceText.trim()) {
-      setVehicleSourceFeedback("Collez d'abord le texte source du vehicule.");
-      return;
-    }
-
-    const titleUpdated = setTextFieldValue("title", parsed.title);
-    if (titleUpdated) {
-      updatedFields += 1;
-      if (!slugTouched && parsed.title) {
-        setSlug(slugify(parsed.title));
-      }
-    }
-
-    if (setSelectValue("brandId", parsed.brand)) updatedFields += 1;
-    if (setSelectValue("categoryId", parsed.category)) updatedFields += 1;
-    if (setTextFieldValue("model", parsed.model)) updatedFields += 1;
-    if (setTextFieldValue("generation", parsed.generation)) updatedFields += 1;
-    if (setTextFieldValue("trim", parsed.trim)) updatedFields += 1;
-    if (setTextFieldValue("year", parsed.year)) updatedFields += 1;
-    if (setTextFieldValue("price", parsed.price)) updatedFields += 1;
-    if (setSelectValue("priceCurrency", parsed.priceCurrency)) updatedFields += 1;
-    if (setTextFieldValue("engineCode", parsed.engineCode)) updatedFields += 1;
-    if (setTextFieldValue("motorization", parsed.motorization)) updatedFields += 1;
-    if (setTextFieldValue("displacement", parsed.displacement)) updatedFields += 1;
-    if (setTextFieldValue("engine", parsed.engine)) updatedFields += 1;
-    if (setSelectValue("fuelType", parsed.fuelType)) updatedFields += 1;
-    if (setTextFieldValue("transmission", parsed.transmission || parsed.gearbox)) {
-      updatedFields += 1;
-    }
-    if (setTextFieldValue("gearbox", parsed.gearbox)) updatedFields += 1;
-    if (setTextFieldValue("firstRegistrationDate", parsed.firstRegistrationDate)) {
-      updatedFields += 1;
-    }
-    if (setTextFieldValue("mileage", parsed.mileage)) updatedFields += 1;
-    if (setTextFieldValue("power", parsed.power)) updatedFields += 1;
-    if (setTextFieldValue("doors", parsed.doors)) updatedFields += 1;
-    if (setTextFieldValue("seats", parsed.seats)) updatedFields += 1;
-    if (setTextFieldValue("colorName", parsed.colorName)) updatedFields += 1;
-    if (setTextFieldValue("registration", parsed.registration)) updatedFields += 1;
-    if (setTextFieldValue("vin", parsed.vin)) updatedFields += 1;
-    if (setTextFieldValue("description", parsed.description)) updatedFields += 1;
-
-    setVehicleSourceFeedback(
-      updatedFields
-        ? `${updatedFields} champ(s) alimente(s). Verifiez avant d'enregistrer.`
-        : "Aucune correspondance detectee. Utilisez des lignes comme Marque : BMW, Prix : 27000, Modele : X1.",
-    );
   }
 
   return (
@@ -858,7 +497,7 @@ export function VehicleForm({
             "fixed right-5 top-5 z-50 flex max-w-sm items-start gap-3 rounded-md border px-4 py-3 text-sm shadow-2xl",
             toast.ok
               ? "border-emerald-500/30 bg-emerald-950 text-emerald-100"
-              : "border-[#ffc10a]/40 bg-[#ffc10a]/10 text-[#ffc10a]",
+              : "border-[#a21d2f]/40 bg-[#a21d2f]/10 text-[#a21d2f]",
           )}
         >
           {toast.ok ? (
@@ -873,10 +512,9 @@ export function VehicleForm({
       <form
         action={submitForm}
         className="grid gap-6"
-        ref={formRef}
       >
         {!state.ok && errorSummary.length ? (
-          <div className="rounded-md border border-[#ffc10a]/40 bg-[#ffc10a]/10 px-4 py-3 text-sm text-[#ffe08a]">
+          <div className="rounded-md border border-[#a21d2f]/40 bg-[#a21d2f]/10 px-4 py-3 text-sm text-[#a21d2f]">
             <p className="font-semibold">{state.message}</p>
             <ul className="mt-3 grid gap-1.5">
               {errorSummary.map(({ error, field, label }) => (
@@ -922,38 +560,6 @@ export function VehicleForm({
                 value={slug}
               />
             </Field>
-            <div className="grid gap-3 rounded-md border border-zinc-800 bg-zinc-950 p-4 lg:col-span-2">
-              <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-                <div>
-                  <p className="text-sm font-semibold text-zinc-100">
-                    Texte source du vehicule
-                  </p>
-                  <p className="mt-1 text-xs leading-5 text-zinc-500">
-                    Collez une fiche ou un descriptif. Les champs reconnus
-                    seront remplis automatiquement.
-                  </p>
-                </div>
-                <Button
-                  className="shrink-0"
-                  onClick={applyVehicleSourceText}
-                  type="button"
-                >
-                  <WandSparkles className="h-4 w-4" />
-                  Alimenter les champs
-                </Button>
-              </div>
-              <textarea
-                className="min-h-36 w-full rounded-md border border-zinc-800 bg-[#0b0b0b] px-3 py-3 text-sm text-zinc-100 outline-none ring-primary/30 transition focus:ring-4"
-                onChange={(event) => setVehicleSourceText(event.target.value)}
-                placeholder={`Exemple:\nMarque : BMW\nModele : X1\nPrix : 27000 EUR\nAnnee : 2023\nKilometrage : 50138 km\nCarburant : Diesel\nBoite : Automatique\nType : SUV`}
-                value={vehicleSourceText}
-              />
-              {vehicleSourceFeedback ? (
-                <p className="text-xs font-medium text-[#ffc10a]">
-                  {vehicleSourceFeedback}
-                </p>
-              ) : null}
-            </div>
             <Field label="Marque" error={getFieldError(state, "brandId")}>
               <select
                 className={inputClass}
@@ -1017,69 +623,26 @@ export function VehicleForm({
               />
             </Field>
             <Field label="Prix" error={getFieldError(state, "price")}>
-              <div className="grid gap-3">
-                <div className="grid grid-cols-[1fr_120px] gap-2">
-                  <input
-                    className={inputClass}
-                    defaultValue={initialData.price}
-                    min="0"
-                    name="price"
-                    required
-                    step="0.01"
-                    type="number"
-                  />
-                  <select
-                    className={inputClass}
-                    defaultValue={initialData.priceCurrency}
-                    name="priceCurrency"
-                  >
-                    <option value="TND">TND</option>
-                    <option value="EUR">EUR</option>
-                  </select>
-                </div>
-                <label className="flex items-center gap-3 rounded-md border border-zinc-800 bg-zinc-950 px-3 py-2 text-sm text-zinc-200">
-                  <input
-                    className="h-4 w-4 accent-primary"
-                    checked={transportIncluded}
-                    name="transportIncluded"
-                    onChange={(event) => setTransportIncluded(event.target.checked)}
-                    type="checkbox"
-                  />
-                  Transport inclus jusqu&apos;à port Rades
-                </label>
+              <div className="grid grid-cols-[1fr_120px] gap-2">
+                <input
+                  className={inputClass}
+                  defaultValue={initialData.price}
+                  min="0"
+                  name="price"
+                  required
+                  step="0.01"
+                  type="number"
+                />
+                <select
+                  className={inputClass}
+                  defaultValue={initialData.priceCurrency}
+                  name="priceCurrency"
+                >
+                  <option value="TND">TND</option>
+                  <option value="EUR">EUR</option>
+                </select>
               </div>
             </Field>
-            {!transportIncluded ? (
-              <Field
-                label="Prix de transport en TND ou en Euro"
-                error={getFieldError(state, "transportPrice")}
-              >
-                <div className="grid grid-cols-[1fr_120px] gap-2">
-                  <input
-                    className={inputClass}
-                    defaultValue={initialData.transportPrice}
-                    min="0"
-                    name="transportPrice"
-                    step="0.01"
-                    type="number"
-                  />
-                  <select
-                    className={inputClass}
-                    defaultValue={initialData.transportCurrency}
-                    name="transportCurrency"
-                  >
-                    <option value="TND">TND</option>
-                    <option value="EUR">EUR</option>
-                  </select>
-                </div>
-              </Field>
-            ) : (
-              <input
-                name="transportCurrency"
-                type="hidden"
-                value={initialData.transportCurrency}
-              />
-            )}
           </div>
 
           <div className="mt-5 grid gap-4 lg:grid-cols-3">
@@ -1121,131 +684,6 @@ export function VehicleForm({
               Nouveau
             </label>
           </div>
-        </section>
-
-        <section className="rounded-md border border-zinc-800 bg-zinc-900 p-5">
-          <SectionTitle
-            description="Ajoutez le PDF officiel du rapport d'inspection du vehicule."
-            title="Rapport d'inspection"
-          />
-          <div className="mt-5 rounded-md border border-dashed border-zinc-700 bg-zinc-950 p-5 text-center">
-            <FileText className="mx-auto h-8 w-8 text-zinc-500" />
-            <p className="mt-2 text-sm font-medium text-zinc-200">
-              Chargez un fichier PDF pour la fiche publique
-            </p>
-            <p className="mt-1 text-xs text-zinc-500">
-              Format PDF uniquement. Taille maximale: 20 Mo.
-            </p>
-            <input
-              accept="application/pdf"
-              className="hidden"
-              onChange={(event) => addInspectionReportFile(event.target.files)}
-              ref={inspectionReportInputRef}
-              type="file"
-            />
-            <Button
-              className="mt-4 border-zinc-700 bg-zinc-950 text-zinc-100 hover:bg-zinc-800 hover:text-white"
-              onClick={() => inspectionReportInputRef.current?.click()}
-              type="button"
-              variant="outline"
-            >
-              <FileText className="h-4 w-4" />
-              Ajouter le rapport PDF
-            </Button>
-            <Button
-              className="ml-2 mt-4 border-zinc-700 bg-zinc-950 text-zinc-100 hover:bg-zinc-800 hover:text-white"
-              onClick={() => setShowReportLibrary((value) => !value)}
-              type="button"
-              variant={showReportLibrary ? "default" : "outline"}
-            >
-              <Images className="h-4 w-4" />
-              Choisir depuis le media
-            </Button>
-          </div>
-          {showReportLibrary ? (
-            <div className="mt-5 rounded-md border border-zinc-800 bg-zinc-950 p-4">
-              <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-                <div>
-                  <h4 className="text-sm font-semibold text-zinc-100">
-                    Rapports PDF disponibles
-                  </h4>
-                  <p className="mt-1 text-xs text-zinc-500">
-                    Selectionnez un PDF deja charge dans la bibliotheque media.
-                  </p>
-                </div>
-                <span className="text-xs text-zinc-500">
-                  {reportAssets.length} fichier(s)
-                </span>
-              </div>
-              {reportAssets.length ? (
-                <div className="mt-4 grid max-h-80 gap-3 overflow-y-auto pr-1 md:grid-cols-2 xl:grid-cols-3">
-                  {reportAssets.map((asset) => {
-                    const isSelected =
-                      inspectionReport?.type === "existing" &&
-                      inspectionReport.url === asset.localPath;
-
-                    return (
-                      <button
-                        className={cn(
-                          "flex min-w-0 items-center gap-3 rounded-md border bg-zinc-900 p-3 text-left transition hover:border-[#ffc10a]",
-                          isSelected
-                            ? "border-[#ffc10a] ring-1 ring-[#ffc10a]"
-                            : "border-zinc-800",
-                        )}
-                        disabled={isSelected}
-                        key={asset.id}
-                        onClick={() => addReportAsset(asset)}
-                        type="button"
-                      >
-                        <span className="grid h-10 w-10 shrink-0 place-items-center rounded-md bg-[#ffc10a]/15 text-[#ffc10a]">
-                          <FileText className="h-5 w-5" />
-                        </span>
-                        <span className="min-w-0">
-                          <span className="block truncate text-sm font-semibold text-zinc-100">
-                            {asset.title || asset.originalName}
-                          </span>
-                          <span className="mt-1 block truncate text-xs text-zinc-500">
-                            {asset.localPath}
-                          </span>
-                        </span>
-                      </button>
-                    );
-                  })}
-                </div>
-              ) : (
-                <p className="mt-4 rounded-md border border-zinc-800 bg-zinc-900 px-4 py-3 text-sm text-zinc-500">
-                  Aucun PDF trouve dans la bibliotheque media.
-                </p>
-              )}
-            </div>
-          ) : null}
-          {inspectionReport ? (
-            <div className="mt-4 flex flex-col gap-3 rounded-md border border-zinc-800 bg-zinc-950 p-4 sm:flex-row sm:items-center sm:justify-between">
-              <div className="min-w-0">
-                <p className="text-sm font-semibold text-zinc-100">
-                  Rapport d&apos;inspection
-                </p>
-                <p className="mt-1 truncate text-xs text-zinc-500">
-                  {inspectionReport.type === "existing"
-                    ? inspectionReport.url
-                    : inspectionReport.file.name}
-                </p>
-              </div>
-              <Button
-                onClick={removeInspectionReport}
-                type="button"
-                variant="ghost"
-              >
-                <X className="h-4 w-4" />
-                Retirer
-              </Button>
-            </div>
-          ) : null}
-          {getFieldError(state, "inspectionReport") ? (
-            <p className="mt-2 text-sm text-[#ffc10a]">
-              {getFieldError(state, "inspectionReport")}
-            </p>
-          ) : null}
         </section>
 
         <section className="rounded-md border border-zinc-800 bg-zinc-900 p-5">
@@ -1300,7 +738,7 @@ export function VehicleForm({
             </div>
           </div>
           {getFieldError(state, "videos") ? (
-            <p className="mt-2 text-sm text-[#ffc10a]">
+            <p className="mt-2 text-sm text-[#a21d2f]">
               {getFieldError(state, "videos")}
             </p>
           ) : null}
@@ -1516,7 +954,7 @@ export function VehicleForm({
                 <div className="flex items-center gap-2">
                   {group.iconSvg ? (
                     <span
-                      className="grid h-5 w-5 place-items-center text-[#ffc10a] [&_svg]:h-5 [&_svg]:w-5"
+                      className="grid h-5 w-5 place-items-center text-[#a21d2f] [&_svg]:h-5 [&_svg]:w-5"
                       dangerouslySetInnerHTML={{ __html: group.iconSvg }}
                     />
                   ) : null}
@@ -1604,7 +1042,7 @@ export function VehicleForm({
             </div>
           </div>
           {getFieldError(state, "images") ? (
-            <p className="mt-2 text-sm text-[#ffc10a]">
+            <p className="mt-2 text-sm text-[#a21d2f]">
               {getFieldError(state, "images")}
             </p>
           ) : null}
@@ -1634,7 +1072,7 @@ export function VehicleForm({
                   return (
                     <button
                       className={cn(
-                        "overflow-hidden rounded-md border bg-zinc-900 text-left transition hover:border-[#ffc10a]",
+                        "overflow-hidden rounded-md border bg-zinc-900 text-left transition hover:border-[#a21d2f]",
                         isSelected
                           ? "border-emerald-500 ring-2 ring-emerald-500/30"
                           : "border-zinc-800",
@@ -1737,7 +1175,7 @@ export function VehicleForm({
               placeholder="<p>Historique, entretien, garantie, points forts...</p>"
             />
             {getFieldError(state, "description") ? (
-              <p className="mt-2 text-sm text-[#ffc10a]">
+              <p className="mt-2 text-sm text-[#a21d2f]">
                 {getFieldError(state, "description")}
               </p>
             ) : null}
@@ -1798,7 +1236,7 @@ function Field({
     <label className="grid gap-2 text-sm font-medium text-zinc-200">
       {label}
       {children}
-      {error ? <span className="text-xs text-[#ffc10a]">{error}</span> : null}
+      {error ? <span className="text-xs text-[#a21d2f]">{error}</span> : null}
     </label>
   );
 }

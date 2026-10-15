@@ -17,7 +17,6 @@ import {
 const MAX_VEHICLE_IMAGES = 100;
 const MAX_VEHICLE_VIDEOS = 100;
 const allowedVideoTypes = new Set(["video/mp4", "video/webm", "video/quicktime"]);
-const allowedReportTypes = new Set(["application/pdf"]);
 
 async function ensureAdmin() {
   const session = await auth();
@@ -67,9 +66,6 @@ function getVehiclePayload(formData: FormData) {
     motorization: formData.get("motorization"),
     price: formData.get("price"),
     priceCurrency: formData.get("priceCurrency"),
-    transportIncluded: getBoolean(formData, "transportIncluded"),
-    transportPrice: formData.get("transportPrice"),
-    transportCurrency: formData.get("transportCurrency"),
     year: formData.get("year"),
     status: formData.get("status"),
     isFeatured: getBoolean(formData, "isFeatured"),
@@ -92,7 +88,6 @@ function getVehiclePayload(formData: FormData) {
     optionIds: formData.getAll("optionIds").map(String),
     existingImages: formData.getAll("existingImages").map(String),
     existingVideos: formData.getAll("existingVideos").map(String),
-    existingInspectionReportUrl: formData.get("existingInspectionReportUrl"),
   });
 }
 
@@ -129,12 +124,6 @@ function getVideoFiles(formData: FormData) {
   return formData
     .getAll("videos")
     .filter((file): file is File => file instanceof File && file.size > 0);
-}
-
-function getInspectionReportFile(formData: FormData) {
-  const file = formData.get("inspectionReport");
-
-  return file instanceof File && file.size > 0 ? file : null;
 }
 
 function sanitizeFilename(value: string) {
@@ -250,52 +239,6 @@ function normalizeStoredVideos(values: string[]) {
     .filter(Boolean);
 }
 
-async function saveInspectionReportFile(file: File | null) {
-  if (!file) return null;
-
-  const maxSizeMb = 20;
-
-  if (!allowedReportTypes.has(file.type)) {
-    throw new Error("Le rapport d'inspection doit etre un fichier PDF.");
-  }
-
-  if (file.size > maxSizeMb * 1024 * 1024) {
-    throw new Error(`Le rapport d'inspection ne doit pas depasser ${maxSizeMb} Mo.`);
-  }
-
-  const uploadDir = path.join(
-    process.cwd(),
-    "public",
-    "uploads",
-    "vehicles",
-    "reports",
-  );
-  await mkdir(uploadDir, { recursive: true });
-
-  const filename = `${Date.now()}-${crypto.randomUUID()}-${sanitizeFilename(file.name)}.pdf`;
-  const bytes = Buffer.from(await file.arrayBuffer());
-  const absolutePath = path.join(uploadDir, filename);
-
-  await writeFile(absolutePath, bytes);
-
-  const localPath = `/uploads/vehicles/reports/${filename}`;
-  const prisma = getPrisma();
-  await prisma.mediaAsset.create({
-    data: {
-      filename,
-      localPath,
-      mimeType: "application/pdf",
-      originalName: file.name || filename,
-      publicUrl: getMediaUrl(localPath),
-      size: bytes.length,
-      source: "vehicle-inspection-report",
-      title: path.parse(file.name || filename).name || "Rapport d'inspection",
-    },
-  });
-
-  return localPath;
-}
-
 function toPrismaVehicleBaseData(
   data: ReturnType<typeof vehicleSchema.parse>,
   images: string[],
@@ -314,9 +257,9 @@ function toPrismaVehicleBaseData(
     motorization: data.motorization || null,
     price: data.price,
     priceCurrency: data.priceCurrency,
-    transportIncluded: data.transportIncluded,
-    transportPrice: data.transportIncluded ? null : data.transportPrice || null,
-    transportCurrency: data.transportCurrency,
+    transportIncluded: true,
+    transportPrice: null,
+    transportCurrency: data.priceCurrency,
     year: data.year,
     firstRegistrationDate: data.firstRegistrationDate
       ? new Date(`${data.firstRegistrationDate}T00:00:00.000Z`)
@@ -372,7 +315,6 @@ export async function createVehicle(
 
     const imageFiles = getImageFiles(formData);
     const videoFiles = getVideoFiles(formData);
-    const inspectionReportFile = getInspectionReportFile(formData);
     const existingVideos = normalizeStoredVideos(parsed.data.existingVideos);
 
     if (parsed.data.existingImages.length + imageFiles.length > MAX_VEHICLE_IMAGES) {
@@ -393,10 +335,6 @@ export async function createVehicle(
 
     const uploadedImages = await saveImageFiles(imageFiles);
     const uploadedVideos = await saveVideoFiles(videoFiles);
-    const uploadedInspectionReport =
-      await saveInspectionReportFile(inspectionReportFile);
-    const inspectionReportUrl =
-      uploadedInspectionReport || parsed.data.existingInspectionReportUrl || null;
     const images = [...parsed.data.existingImages, ...uploadedImages].slice(
       0,
       MAX_VEHICLE_IMAGES,
@@ -414,7 +352,7 @@ export async function createVehicle(
           parsed.data,
           images,
           videos,
-          inspectionReportUrl,
+          null,
         ),
         options: {
           connect: parsed.data.optionIds.map((id) => ({ id })),
@@ -427,7 +365,7 @@ export async function createVehicle(
     revalidatePath("/categories");
     revalidatePath("/marques");
     revalidateTag("public-brand-links", "max");
-    revalidatePath(`/vehicles/${vehicle.slug}`);
+    revalidatePath(`/vehicules/${vehicle.slug}`);
 
     return {
       ok: true,
@@ -459,7 +397,6 @@ export async function updateVehicle(
 
     const imageFiles = getImageFiles(formData);
     const videoFiles = getVideoFiles(formData);
-    const inspectionReportFile = getInspectionReportFile(formData);
     const existingVideos = normalizeStoredVideos(parsed.data.existingVideos);
 
     if (parsed.data.existingImages.length + imageFiles.length > MAX_VEHICLE_IMAGES) {
@@ -480,10 +417,6 @@ export async function updateVehicle(
 
     const uploadedImages = await saveImageFiles(imageFiles);
     const uploadedVideos = await saveVideoFiles(videoFiles);
-    const uploadedInspectionReport =
-      await saveInspectionReportFile(inspectionReportFile);
-    const inspectionReportUrl =
-      uploadedInspectionReport || parsed.data.existingInspectionReportUrl || null;
     const images = [...parsed.data.existingImages, ...uploadedImages].slice(
       0,
       MAX_VEHICLE_IMAGES,
@@ -495,7 +428,7 @@ export async function updateVehicle(
 
     const prisma = getPrisma();
     const currentVehicle = await prisma.vehicle.findUnique({
-      select: { slug: true },
+      select: { slug: true, inspectionReportUrl: true },
       where: { id },
     });
 
@@ -506,7 +439,7 @@ export async function updateVehicle(
           parsed.data,
           images,
           videos,
-          inspectionReportUrl,
+          currentVehicle?.inspectionReportUrl ?? null,
         ),
         options: {
           set: parsed.data.optionIds.map((id) => ({ id })),
@@ -520,9 +453,9 @@ export async function updateVehicle(
     revalidatePath("/categories");
     revalidatePath("/marques");
     revalidateTag("public-brand-links", "max");
-    revalidatePath(`/vehicles/${parsed.data.slug}`);
+    revalidatePath(`/vehicules/${parsed.data.slug}`);
     if (currentVehicle?.slug && currentVehicle.slug !== parsed.data.slug) {
-      revalidatePath(`/vehicles/${currentVehicle.slug}`);
+      revalidatePath(`/vehicules/${currentVehicle.slug}`);
     }
 
     return {
@@ -556,7 +489,7 @@ export async function deleteVehicleAction(formData: FormData) {
   revalidatePath("/marques");
   revalidateTag("public-brand-links", "max");
   if (vehicle?.slug) {
-    revalidatePath(`/vehicles/${vehicle.slug}`);
+    revalidatePath(`/vehicules/${vehicle.slug}`);
   }
 }
 
@@ -595,5 +528,5 @@ export async function markVehicleAsDraftAction(formData: FormData) {
   revalidatePath("/categories");
   revalidatePath("/marques");
   revalidateTag("public-brand-links", "max");
-  revalidatePath(`/vehicles/${vehicle.slug}`);
+  revalidatePath(`/vehicules/${vehicle.slug}`);
 }

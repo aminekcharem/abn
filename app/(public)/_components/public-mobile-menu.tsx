@@ -12,18 +12,23 @@ type MobileNavLink = {
 
 type PublicMobileMenuProps = {
   links: MobileNavLink[];
+  variant?: "dark" | "light";
 };
 
-export function PublicMobileMenu({ links }: PublicMobileMenuProps) {
+export function PublicMobileMenu({ links, variant = "dark" }: PublicMobileMenuProps) {
   const [open, setOpen] = useState(false);
   const [openParent, setOpenParent] = useState<string | null>(null);
+  const isLight = variant === "light";
+  const buttonClassName = isLight
+    ? "border-[#ededed] bg-[#f7f7f5] text-[#24272c] hover:border-[#a21d2f] hover:text-[#a21d2f]"
+    : "border-white/20 bg-white/10 text-white hover:bg-white/15";
 
   return (
     <div className="relative z-[300] lg:hidden">
       <button
         aria-expanded={open}
         aria-label={open ? "Fermer le menu" : "Ouvrir le menu"}
-        className="inline-flex h-10 w-10 items-center justify-center rounded-md border border-white/20 bg-white/10 text-white transition hover:bg-white/15"
+        className={`inline-flex h-10 w-10 items-center justify-center rounded-md border transition ${buttonClassName}`}
         onClick={() => setOpen((value) => !value)}
         type="button"
       >

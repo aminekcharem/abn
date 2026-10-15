@@ -132,7 +132,7 @@ export function CategoryEditForm({ category }: CategoryEditFormProps) {
             Remplacer par une image PNG, JPG, SVG ou WebP
             <input
               accept="image/svg+xml,image/png,image/jpeg,image/webp"
-              className="rounded-md border border-dashed border-zinc-700 bg-zinc-950 px-3 py-3 text-sm text-zinc-100 file:mr-4 file:rounded-md file:border-0 file:bg-[#ffc10a] file:px-3 file:py-2 file:text-sm file:font-semibold file:text-[#050b20]"
+              className="rounded-md border border-dashed border-zinc-700 bg-zinc-950 px-3 py-3 text-sm text-zinc-100 file:mr-4 file:rounded-md file:border-0 file:bg-[#a21d2f] file:px-3 file:py-2 file:text-sm file:font-semibold file:text-white"
               name="visual"
               type="file"
             />
@@ -190,3 +190,4 @@ export function CategoryEditForm({ category }: CategoryEditFormProps) {
 
 const inputClass =
   "h-10 rounded-md border border-zinc-800 bg-zinc-950 px-3 text-sm text-zinc-100 outline-none ring-primary/30 transition focus:ring-4";
+
