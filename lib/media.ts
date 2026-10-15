@@ -1,4 +1,5 @@
 import { mkdir, writeFile } from "node:fs/promises";
+import { randomUUID } from "node:crypto";
 import path from "node:path";
 import sharp from "sharp";
 
@@ -81,7 +82,7 @@ export async function saveMediaFile(
   await mkdir(uploadDir, { recursive: true });
 
   const extension = getExtension(file);
-  const filename = `${Date.now()}-${crypto.randomUUID()}-${sanitizeFilename(file.name)}${extension}`;
+  const filename = `${Date.now()}-${randomUUID()}-${sanitizeFilename(file.name)}${extension}`;
   const bytes = await getImageBuffer(file);
   const absolutePath = path.join(uploadDir, filename);
 

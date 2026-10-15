@@ -1,6 +1,7 @@
 "use server";
 
 import { mkdir, writeFile } from "node:fs/promises";
+import { randomUUID } from "node:crypto";
 import path from "node:path";
 import { revalidatePath, revalidateTag } from "next/cache";
 import type { FuelType } from "@prisma/client";
@@ -174,7 +175,7 @@ async function saveVideoFiles(files: File[]) {
     }
 
     const extension = getVideoExtension(file);
-    const filename = `${Date.now()}-${crypto.randomUUID()}-${sanitizeFilename(file.name)}${extension}`;
+    const filename = `${Date.now()}-${randomUUID()}-${sanitizeFilename(file.name)}${extension}`;
     const bytes = Buffer.from(await file.arrayBuffer());
     const absolutePath = path.join(uploadDir, filename);
 
