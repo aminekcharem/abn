@@ -86,7 +86,7 @@ export function SettingsForm({
         <div className="grid gap-4">
           <label className="grid gap-2 text-sm font-medium text-zinc-200">
             <span className="flex items-center gap-2">
-              <Building2 className="h-4 w-4 text-[#ffc10a]" />
+              <Building2 className="h-4 w-4 text-[#a21d2f]" />
               Nom de l&apos;entreprise
             </span>
             <input
@@ -107,7 +107,7 @@ export function SettingsForm({
           <div className="grid gap-4 lg:grid-cols-2">
             <label className="grid gap-2 text-sm font-medium text-zinc-200">
               <span className="flex items-center gap-2">
-                <Phone className="h-4 w-4 text-[#ffc10a]" />
+                <Phone className="h-4 w-4 text-[#a21d2f]" />
                 Telephone public
               </span>
               <input
@@ -127,7 +127,7 @@ export function SettingsForm({
 
             <label className="grid gap-2 text-sm font-medium text-zinc-200">
               <span className="flex items-center gap-2">
-                <Mail className="h-4 w-4 text-[#ffc10a]" />
+                <Mail className="h-4 w-4 text-[#a21d2f]" />
                 E-mail public
               </span>
               <input
@@ -150,7 +150,7 @@ export function SettingsForm({
           <div className="grid gap-4 rounded-md border border-zinc-800 bg-zinc-950 p-4 lg:grid-cols-2">
             <label className="grid gap-2 text-sm font-medium text-zinc-200">
               <span className="flex items-center gap-2">
-                <ThumbsUp className="h-4 w-4 text-[#ffc10a]" />
+                <ThumbsUp className="h-4 w-4 text-[#a21d2f]" />
                 Lien Facebook
               </span>
               <input
@@ -170,7 +170,7 @@ export function SettingsForm({
 
             <label className="grid gap-2 text-sm font-medium text-zinc-200">
               <span className="flex items-center gap-2">
-                <Camera className="h-4 w-4 text-[#ffc10a]" />
+                <Camera className="h-4 w-4 text-[#a21d2f]" />
                 Lien Instagram
               </span>
               <input
@@ -192,9 +192,9 @@ export function SettingsForm({
           <div className="grid gap-2 text-sm font-medium text-zinc-200">
             <span className="flex items-center gap-2">
               {settings.showFloatingBar ? (
-                <Eye className="h-4 w-4 text-[#ffc10a]" />
+                <Eye className="h-4 w-4 text-[#a21d2f]" />
               ) : (
-                <EyeOff className="h-4 w-4 text-[#ffc10a]" />
+                <EyeOff className="h-4 w-4 text-[#a21d2f]" />
               )}
               Barre d&apos;icones fixe du site
             </span>
@@ -229,7 +229,7 @@ export function SettingsForm({
             currentUrl={settings.logoUrl}
             description="Utilise dans la navigation du backoffice."
             fileName="logo"
-            icon={<ImagePlus className="h-4 w-4 text-[#ffc10a]" />}
+            icon={<ImagePlus className="h-4 w-4 text-[#a21d2f]" />}
             mediaFieldName="logoMediaPath"
             mediaOptions={mediaOptions}
             onPreviewChange={setLogoPreviewUrl}
@@ -242,7 +242,7 @@ export function SettingsForm({
               currentUrl={settings.websiteLogoUrl}
               description="Utilise dans l'en-tete public du showroom."
               fileName="websiteLogo"
-              icon={<Globe2 className="h-4 w-4 text-[#ffc10a]" />}
+              icon={<Globe2 className="h-4 w-4 text-[#a21d2f]" />}
               mediaFieldName="websiteLogoMediaPath"
               mediaOptions={mediaOptions}
               onPreviewChange={(url) =>
@@ -256,7 +256,7 @@ export function SettingsForm({
               currentUrl={settings.authLogoUrl}
               description="Affiche sur la page de connexion admin."
               fileName="authLogo"
-              icon={<KeyRound className="h-4 w-4 text-[#ffc10a]" />}
+              icon={<KeyRound className="h-4 w-4 text-[#a21d2f]" />}
               mediaFieldName="authLogoMediaPath"
               mediaOptions={mediaOptions}
               onPreviewChange={(url) =>
@@ -294,9 +294,9 @@ export function SettingsForm({
           <div className="grid gap-2 text-sm font-medium text-zinc-200">
             <span className="flex items-center gap-2">
               {settings.adminTheme === "LIGHT" ? (
-                <Sun className="h-4 w-4 text-[#ffc10a]" />
+                <Sun className="h-4 w-4 text-[#a21d2f]" />
               ) : (
-                <Moon className="h-4 w-4 text-[#ffc10a]" />
+                <Moon className="h-4 w-4 text-[#a21d2f]" />
               )}
               Mode du backoffice
             </span>
@@ -342,7 +342,7 @@ export function SettingsForm({
                 width={settings.logoWidth}
               />
             ) : (
-              <span className="grid h-10 w-10 shrink-0 place-items-center rounded-md bg-[#ffc10a] text-sm font-semibold text-[#050b20]">
+              <span className="grid h-10 w-10 shrink-0 place-items-center rounded-md bg-[#a21d2f] text-sm font-semibold text-white">
                 {settings.companyName.slice(0, 2).toUpperCase()}
               </span>
             )}
@@ -389,7 +389,7 @@ const inputClass =
   "h-10 rounded-md border border-zinc-800 bg-zinc-950 px-3 text-sm text-zinc-100 outline-none ring-primary/30 transition focus:ring-4";
 
 const fileInputClass =
-  "rounded-md border border-zinc-800 bg-zinc-950 px-3 py-2 text-sm text-zinc-100 outline-none file:mr-4 file:rounded-md file:border-0 file:bg-[#ffc10a] file:px-3 file:py-2 file:text-sm file:font-semibold file:text-[#050b20] focus:ring-4 focus:ring-primary/30";
+  "rounded-md border border-zinc-800 bg-zinc-950 px-3 py-2 text-sm text-zinc-100 outline-none file:mr-4 file:rounded-md file:border-0 file:bg-[#a21d2f] file:px-3 file:py-2 file:text-sm file:font-semibold file:text-white focus:ring-4 focus:ring-primary/30";
 
 function LogoPicker({
   currentPath,
@@ -463,7 +463,7 @@ function LogoPicker({
                 {mediaOptions.length ? (
                   <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
                     <button
-                      className="flex min-h-28 cursor-pointer items-center gap-3 rounded-md border border-zinc-800 bg-black px-3 py-2 text-left text-xs text-zinc-300 transition hover:border-[#ffc10a]/60"
+                      className="flex min-h-28 cursor-pointer items-center gap-3 rounded-md border border-zinc-800 bg-black px-3 py-2 text-left text-xs text-zinc-300 transition hover:border-[#a21d2f]/60"
                       onClick={() => {
                         setSelectedPath("");
                         setSelectedName(
@@ -498,8 +498,8 @@ function LogoPicker({
                         <button
                           className={
                             isSelected
-                              ? "grid cursor-pointer grid-cols-[72px_1fr] items-center gap-3 rounded-md border border-[#ffc10a] bg-[#ffc10a]/10 p-3 text-left text-xs text-zinc-300"
-                              : "grid cursor-pointer grid-cols-[72px_1fr] items-center gap-3 rounded-md border border-zinc-800 bg-black p-3 text-left text-xs text-zinc-300 transition hover:border-[#ffc10a]/60"
+                              ? "grid cursor-pointer grid-cols-[72px_1fr] items-center gap-3 rounded-md border border-[#a21d2f] bg-[#a21d2f]/10 p-3 text-left text-xs text-zinc-300"
+                              : "grid cursor-pointer grid-cols-[72px_1fr] items-center gap-3 rounded-md border border-zinc-800 bg-black p-3 text-left text-xs text-zinc-300 transition hover:border-[#a21d2f]/60"
                           }
                           key={`${mediaFieldName}-${asset.id}`}
                           onClick={() => {
@@ -598,3 +598,4 @@ function LogoPreview({
     </div>
   );
 }
+

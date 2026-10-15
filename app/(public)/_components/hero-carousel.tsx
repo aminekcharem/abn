@@ -8,6 +8,7 @@ import {
   ChevronRight,
   Fuel,
   Gauge,
+  Search,
   Settings2,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
@@ -54,7 +55,10 @@ export function HeroCarousel({ vehicles }: HeroCarouselProps) {
   if (!activeVehicle) return null;
 
   return (
-    <section id="top" className="relative min-h-[720px] overflow-hidden bg-[#1b1b1b] text-white sm:min-h-[760px] lg:min-h-[820px]">
+    <section
+      id="top"
+      className="relative min-h-[650px] overflow-hidden bg-[#070707] text-white sm:min-h-[720px] lg:min-h-[780px]"
+    >
       {vehicles.map((vehicle, index) => (
         <Image
           alt=""
@@ -70,44 +74,77 @@ export function HeroCarousel({ vehicles }: HeroCarouselProps) {
           src={vehicle.imageUrl}
         />
       ))}
-      <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(27,27,27,0.88),rgba(27,27,27,0.52)_52%,rgba(27,27,27,0.22)),linear-gradient(0deg,rgba(27,27,27,0.82),rgba(27,27,27,0.12)_42%,rgba(27,27,27,0.34))]" />
+      <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(7,7,7,0.9),rgba(7,7,7,0.58)_52%,rgba(7,7,7,0.24)),linear-gradient(0deg,rgba(7,7,7,0.82),rgba(7,7,7,0.10)_45%,rgba(7,7,7,0.38))]" />
 
-      <div className="relative z-10 mx-auto flex min-h-[720px] max-w-7xl flex-col justify-end px-4 pb-8 pt-20 sm:min-h-[760px] sm:px-8 sm:pb-10 lg:min-h-[820px] lg:pb-16 lg:pt-28">
-        <div className="hero-slide-content grid gap-8 lg:grid-cols-[minmax(0,1fr)_380px] lg:items-center" key={activeVehicle.slug}>
-          <div className="max-w-4xl pb-2 lg:pb-16">
-            <p className="text-2xl font-semibold tracking-normal text-white sm:text-4xl">
-              {activeVehicle.price}
+      <div className="relative z-10 mx-auto flex min-h-[650px] max-w-7xl flex-col justify-end px-4 pb-24 pt-24 sm:min-h-[720px] sm:px-8 lg:min-h-[780px] lg:pb-28">
+        <div
+          className="hero-slide-content grid gap-8 lg:grid-cols-[minmax(0,1fr)_410px] lg:items-end"
+          key={activeVehicle.slug}
+        >
+          <div className="max-w-3xl pb-4 lg:pb-10">
+            <p className="text-base font-semibold text-[#a21d2f] sm:text-lg">
+              Premium, inspecte et accompagne
             </p>
-            <div className="mt-6 max-w-4xl text-5xl font-semibold leading-[0.98] tracking-normal sm:text-7xl lg:text-8xl">
+            <h1 className="mt-4 max-w-3xl text-5xl font-bold leading-[0.98] tracking-normal text-white sm:text-7xl lg:text-8xl">
               {activeVehicle.title}
-            </div>
-            <p className="mt-5 inline-flex rounded-full border border-white/18 bg-white/10 px-4 py-2 text-xs font-semibold uppercase text-white/78 backdrop-blur">
-              {activeVehicle.badge}
+            </h1>
+            <p className="mt-6 max-w-2xl text-base leading-8 text-white/78 sm:text-lg">
+              Selection, inspection et export de vehicules premium depuis la Coree avec un accompagnement clair a chaque etape.
             </p>
+            <div className="mt-8 flex flex-wrap gap-3">
+              <Link
+                className="inline-flex min-h-12 items-center justify-center gap-2 rounded-md bg-[#a21d2f] px-6 text-sm font-bold text-white transition hover:bg-white hover:text-[#111111]"
+                href="/#vehicules"
+              >
+                Voir le stock
+                <ChevronRight className="h-4 w-4" />
+              </Link>
+              <Link
+                className="inline-flex min-h-12 items-center justify-center gap-2 rounded-md border border-white/28 bg-white/10 px-6 text-sm font-bold text-white transition hover:bg-white hover:text-[#111111]"
+                href="/#contact"
+              >
+                Nous contacter
+                <ChevronRight className="h-4 w-4" />
+              </Link>
+            </div>
           </div>
 
-          <div className="rounded-md border border-white/12 bg-white/12 p-6 backdrop-blur-md sm:p-8 lg:mr-2">
-            <div className="grid gap-8">
-              <SpecItem icon={Fuel} label="Carburant" value={activeVehicle.fuel || "Disponible"} />
-              <SpecItem icon={Gauge} label="Kilométrage" value={activeVehicle.mileage || "Sur demande"} />
-              <SpecItem icon={Settings2} label="Transmission" value={activeVehicle.transmission || "Sur demande"} />
-              <SpecItem icon={Calendar} label="Année" value={activeVehicle.year || "Sur demande"} />
-            </div>
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-1">
+            <SpecItem
+              icon={Settings2}
+              label="Transmission"
+              value={activeVehicle.transmission || "Sur demande"}
+            />
+            <SpecItem
+              icon={Fuel}
+              label="Carburant"
+              value={activeVehicle.fuel || "Disponible"}
+            />
+            <SpecItem
+              icon={Gauge}
+              label="Kilometrage"
+              value={activeVehicle.mileage || "Sur demande"}
+            />
+            <SpecItem
+              icon={Calendar}
+              label="Annee"
+              value={activeVehicle.year || "Sur demande"}
+            />
             <Link
-              className="mt-10 inline-flex h-14 w-full items-center justify-center gap-2 rounded-md bg-white px-6 text-sm font-semibold text-[#1b1b1b] transition hover:bg-[#ffc10a]"
-              href={`/vehicles/${activeVehicle.slug}`}
+              className="inline-flex min-h-14 items-center justify-center gap-2 rounded-md bg-white px-6 text-sm font-bold text-[#111111] transition hover:bg-[#a21d2f] hover:text-white sm:col-span-2 lg:col-span-1"
+              href={`/vehicules/${activeVehicle.slug}`}
             >
+              <Search className="h-4 w-4" />
               Plus d&apos;infos
-              <ChevronRight className="h-4 w-4" />
             </Link>
           </div>
         </div>
 
-        <div className="mt-10 flex flex-wrap items-center gap-5">
+        <div className="mt-8 flex flex-wrap items-center gap-5">
           {vehicles.length > 1 ? (
             <div className="flex items-center gap-2">
               <button
-                aria-label="Véhicule précédent"
+                aria-label="Vehicule precedent"
                 className="grid h-11 w-11 place-items-center rounded-full border border-white/18 bg-white/10 transition hover:bg-white hover:text-[#1b1b1b]"
                 onClick={showPrevious}
                 type="button"
@@ -115,7 +152,7 @@ export function HeroCarousel({ vehicles }: HeroCarouselProps) {
                 <ChevronLeft className="h-4 w-4" />
               </button>
               <button
-                aria-label="Véhicule suivant"
+                aria-label="Vehicule suivant"
                 className="grid h-11 w-11 place-items-center rounded-full border border-white/18 bg-white/10 transition hover:bg-white hover:text-[#1b1b1b]"
                 onClick={showNext}
                 type="button"
@@ -155,10 +192,14 @@ function SpecItem({
   value: string;
 }) {
   return (
-    <div>
-      <Icon className="h-7 w-7 text-white" />
-      <p className="mt-4 text-sm font-semibold text-white/70">{label}</p>
-      <p className="mt-1 text-xl font-semibold text-white">{value}</p>
+    <div className="flex min-h-24 items-center gap-4 rounded-md border border-white/14 bg-white/10 p-5 backdrop-blur-md">
+      <span className="grid h-12 w-12 shrink-0 place-items-center rounded-md bg-white text-[#111111]">
+        <Icon className="h-5 w-5" />
+      </span>
+      <div>
+        <p className="text-sm font-medium text-white/70">{label}</p>
+        <p className="mt-1 text-lg font-bold text-white">{value}</p>
+      </div>
     </div>
   );
 }

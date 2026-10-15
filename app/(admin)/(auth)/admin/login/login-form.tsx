@@ -68,7 +68,7 @@ export function AdminLoginForm({ initialError }: { initialError?: string }) {
         {isPending ? "Connexion..." : "Se connecter"}
       </Button>
       <Link
-        className="text-center text-sm font-semibold text-primary transition hover:text-[#ffd24a]"
+        className="text-center text-sm font-semibold text-primary transition hover:text-[#a21d2f]"
         href="/admin/forgot-password"
       >
         Mot de passe oublie ?

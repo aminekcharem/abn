@@ -4,6 +4,7 @@ import { useActionState, useRef, useState } from "react";
 import { CheckCircle2, ImagePlus, Loader2, UploadCloud } from "lucide-react";
 
 import { uploadMediaAssets, type MediaActionState } from "./actions";
+import { MAX_MEDIA_FILE_SIZE_MB, MAX_MEDIA_FILES } from "./constants";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
@@ -12,8 +13,7 @@ const initialState: MediaActionState = {
   ok: false,
 };
 
-const maxFileSizeMb = 10;
-const maxFileSizeBytes = maxFileSizeMb * 1024 * 1024;
+const maxFileSizeBytes = MAX_MEDIA_FILE_SIZE_MB * 1024 * 1024;
 
 type SelectedFileSummary = {
   name: string;
@@ -56,10 +56,21 @@ export function MediaUploadForm() {
     const nextFiles = Array.from(files ?? []);
     const oversizedFile = nextFiles.find((file) => file.size > maxFileSizeBytes);
 
+    if (nextFiles.length > MAX_MEDIA_FILES) {
+      setSelectedFiles([]);
+      setClientError(`Maximum ${MAX_MEDIA_FILES} images par envoi.`);
+
+      if (inputRef.current) {
+        inputRef.current.value = "";
+      }
+
+      return;
+    }
+
     if (oversizedFile) {
       setSelectedFiles([]);
       setClientError(
-        `"${oversizedFile.name}" depasse ${maxFileSizeMb} Mo. Selectionnez des fichiers plus legers.`,
+        `"${oversizedFile.name}" depasse ${MAX_MEDIA_FILE_SIZE_MB} Mo. Selectionnez des fichiers plus legers.`,
       );
 
       if (inputRef.current) {
@@ -86,7 +97,7 @@ export function MediaUploadForm() {
             "rounded-md border px-4 py-3 text-sm",
             state.ok
               ? "border-emerald-500/30 bg-emerald-500/10 text-emerald-200"
-              : "border-[#ffc10a]/40 bg-[#ffc10a]/10 text-[#ffc10a]",
+              : "border-[#a21d2f]/40 bg-[#a21d2f]/10 text-[#a21d2f]",
           )}
         >
           {state.message}
@@ -94,7 +105,7 @@ export function MediaUploadForm() {
       ) : null}
 
       {clientError ? (
-        <div className="rounded-md border border-[#ffc10a]/40 bg-[#ffc10a]/10 px-4 py-3 text-sm text-[#ffc10a]">
+        <div className="rounded-md border border-[#a21d2f]/40 bg-[#a21d2f]/10 px-4 py-3 text-sm text-[#a21d2f]">
           {clientError}
         </div>
       ) : null}
@@ -105,8 +116,9 @@ export function MediaUploadForm() {
           Ajoutez les images du site
         </p>
         <p className="mt-1 text-xs text-zinc-500">
-          Selection multiple autorisee. Maximum 10 Mo par fichier.
-          PNG, JPG et JPEG sont convertis en WebP.
+          Selection multiple autorisee jusqu&apos;a {MAX_MEDIA_FILES} images. Maximum{" "}
+          {MAX_MEDIA_FILE_SIZE_MB} Mo par fichier. PNG, JPG et JPEG sont convertis en
+          WebP.
         </p>
         <input
           accept="image/png,image/jpeg,image/svg+xml,image/webp"

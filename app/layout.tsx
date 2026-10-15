@@ -1,21 +1,23 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Inter, Manrope } from "next/font/google";
 import "./globals.css";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
+const inter = Inter({
   subsets: ["latin"],
+  variable: "--font-inter",
+  weight: "400",
 });
 
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
+const manrope = Manrope({
   subsets: ["latin"],
+  variable: "--font-manrope",
+  weight: "700",
 });
 
 export const metadata: Metadata = {
-  title: "AutoPro Korea | Showroom automobile premium",
+  title: "Abn Motors - Showroom automobile premium à Caméroun",
   description:
-    "Showroom automobile premium pour véhicules importés, modèles électriques et voitures de performance en Corée.",
+    "Découvrez Abn Motors, votre showroom automobile premium à Caméroun. Explorez notre sélection de véhicules de luxe et profitez d'une expérience d'achat exceptionnelle.",
 };
 
 export default function RootLayout({
@@ -24,11 +26,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html
-      lang="fr"
-      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
-    >
-      <body className="min-h-full flex flex-col">{children}</body>
+    <html lang="fr" className={`${inter.variable} ${manrope.variable} h-full antialiased`}>
+      <body className={`${inter.className} min-h-full flex flex-col`}>{children}</body>
     </html>
   );
 }

@@ -32,7 +32,7 @@ export function OptionsActionsPanel({
         <Button
           className={
             activeForm === "category"
-              ? "bg-[#ffc10a] text-[#050b20] hover:bg-[#050b20] hover:text-white"
+              ? "bg-[#a21d2f] text-white hover:bg-[#050b20] hover:text-white"
               : "border-zinc-700 bg-zinc-950 text-zinc-100 hover:bg-zinc-800 hover:text-white"
           }
           onClick={() =>
@@ -49,7 +49,7 @@ export function OptionsActionsPanel({
         <Button
           className={
             activeForm === "option"
-              ? "bg-[#ffc10a] text-[#050b20] hover:bg-[#050b20] hover:text-white"
+              ? "bg-[#a21d2f] text-white hover:bg-[#050b20] hover:text-white"
               : "border-zinc-700 bg-zinc-950 text-zinc-100 hover:bg-zinc-800 hover:text-white"
           }
           disabled={!categories.length}
@@ -111,7 +111,7 @@ export function OptionsActionsPanel({
                 Icone SVG
                 <input
                   accept="image/svg+xml"
-                  className="rounded-md border border-zinc-800 bg-zinc-950 px-3 py-2 text-xs text-zinc-100 file:mr-3 file:rounded-md file:border-0 file:bg-[#ffc10a] file:px-3 file:py-1.5 file:text-xs file:font-semibold file:text-[#050b20]"
+                  className="rounded-md border border-zinc-800 bg-zinc-950 px-3 py-2 text-xs text-zinc-100 file:mr-3 file:rounded-md file:border-0 file:bg-[#a21d2f] file:px-3 file:py-1.5 file:text-xs file:font-semibold file:text-white"
                   name="iconSvgFile"
                   type="file"
                 />
@@ -126,7 +126,7 @@ export function OptionsActionsPanel({
               </label>
               <div className="flex items-end lg:col-span-4">
                 <Button
-                  className="bg-[#ffc10a] text-[#050b20] hover:bg-[#050b20] hover:text-white"
+                  className="bg-[#a21d2f] text-white hover:bg-[#050b20] hover:text-white"
                   type="submit"
                 >
                   Ajouter categorie
@@ -160,7 +160,7 @@ export function OptionsActionsPanel({
               </label>
               <div className="flex items-end">
                 <Button
-                  className="bg-[#ffc10a] text-[#050b20] hover:bg-[#050b20] hover:text-white"
+                  className="bg-[#a21d2f] text-white hover:bg-[#050b20] hover:text-white"
                   type="submit"
                 >
                   Ajouter option
@@ -178,3 +178,4 @@ const inputClass =
   "h-10 rounded-md border border-zinc-800 bg-zinc-950 px-3 text-sm text-zinc-100 outline-none ring-primary/30 transition focus:ring-4";
 
 const labelClass = "grid gap-2 text-sm font-medium text-zinc-200";
+

@@ -1,24 +1,21 @@
 import Image from "next/image";
 import Link from "next/link";
-import {
-  BadgeCheck,
-  Car,
-  CarFront,
-  Gauge,
-  Mountain,
-  Sparkles,
-  Truck,
-  Users,
-} from "lucide-react";
-import type { LucideIcon } from "lucide-react";
+import type { Metadata } from "next";
 
 import { PublicHeader } from "../_components/public-header";
+import { CategoriesBrowser } from "./categories-browser";
 import { getMediaUrl } from "@/lib/cdn";
 import { getPrisma } from "@/lib/prisma";
 import { getPublicBrandLinks } from "@/lib/public-navigation";
 import { getShowroomSettings } from "@/lib/settings";
 
 export const revalidate = 300;
+
+export const metadata: Metadata = {
+  description:
+    "Parcourez les categories de vehicules disponibles chez AutoPro Korea.",
+  title: "Categories | AutoPro Korea",
+};
 
 type CategoryCard = {
   description: string | null;
@@ -27,29 +24,13 @@ type CategoryCard = {
   image: string | null;
   name: string;
   slug: string;
-  _count: {
-    vehicles: number;
-  };
+  _count: { vehicles: number };
 };
 
-const iconMap: Record<string, LucideIcon> = {
-  "badge-check": BadgeCheck,
-  "car-front": CarFront,
-  car: Car,
-  gauge: Gauge,
-  mountain: Mountain,
-  sparkles: Sparkles,
-  suv: Truck,
-  truck: Truck,
-  users: Users,
-  wagon: CarFront,
-};
-
-async function getCategories() {
+async function getCategories(): Promise<CategoryCard[]> {
   try {
     const prisma = getPrisma();
-
-    return await prisma.category.findMany({
+    const categories = await prisma.category.findMany({
       orderBy: [{ order: "asc" }, { name: "asc" }],
       select: {
         description: true,
@@ -58,15 +39,15 @@ async function getCategories() {
         image: true,
         name: true,
         slug: true,
-        _count: {
-          select: { vehicles: true },
-        },
+        _count: { select: { vehicles: true } },
       },
-      where: {
-        isActive: true,
-        showOnCategoriesPage: true,
-      },
+      where: { isActive: true, showOnCategoriesPage: true },
     });
+
+    return categories.map((category) => ({
+      ...category,
+      image: category.image ? getMediaUrl(category.image) : null,
+    }));
   } catch {
     return [];
   }
@@ -78,84 +59,46 @@ export default async function CategoriesPage() {
     getShowroomSettings(),
     getPublicBrandLinks(),
   ]);
+  const totalVehicles = categories.reduce(
+    (total, category) => total + category._count.vehicles,
+    0,
+  );
 
   return (
-    <main className="min-h-screen bg-white text-[#1b1b1b]">
+    <main className="min-h-screen bg-[#f7f7f5] text-[#24272c]">
       <PublicHeader brandLinks={brandLinks} settings={settings} sticky={false} />
-
-      <section className="px-4 py-12 sm:px-8">
-        <div className="mx-auto max-w-7xl">
-          <div className="flex flex-wrap items-end justify-between gap-5">
-            <div>
-              <p className="text-sm font-semibold uppercase text-[#1b1b1b]/45">
-                Catégories
-              </p>
-              <h1 className="mt-3 text-3xl font-semibold leading-tight sm:text-5xl">
-                Parcourir par type
-              </h1>
+      <section className="relative overflow-hidden bg-[#17191d] px-4 py-16 text-white sm:px-8 lg:py-24">
+        <Image
+          alt=""
+          className="object-cover opacity-25"
+          fill
+          priority
+          sizes="100vw"
+          src="/showroom-hero.png"
+        />
+        <span className="absolute inset-0 bg-gradient-to-r from-[#17191d] via-[#17191d]/88 to-[#17191d]/54" />
+        <div className="relative mx-auto max-w-7xl">
+          <div className="max-w-3xl">
+            <div className="flex flex-wrap items-center gap-3 text-sm font-semibold">
+              <Link className="text-white/75 transition hover:text-white" href="/">
+                Accueil
+              </Link>
+              <span className="h-1 w-1 rounded-full bg-[#a21d2f]" />
+              <span className="text-white">Categories</span>
             </div>
-            <Link
-              className="inline-flex rounded-full bg-[#1b1b1b] px-5 py-3 text-sm font-semibold text-white transition hover:bg-[#ffc10a] hover:text-[#1b1b1b]"
-              href="/#inventory"
-            >
-              Voir les véhicules
-            </Link>
+            <h1 className="mt-6 text-4xl font-bold leading-tight sm:text-6xl">
+              Parcourir par type
+            </h1>
+            <p className="mt-5 max-w-2xl text-base leading-8 text-white/72">
+              Retrouvez les styles de carrosserie disponibles et accedez
+              rapidement aux vehicules qui correspondent a votre recherche.
+            </p>
           </div>
-
-          <div className="mt-10 grid gap-5 md:grid-cols-2 xl:grid-cols-3">
-            {categories.map((category) => (
-              <CategoryTile category={category} key={category.id} />
-            ))}
-          </div>
-
-          {!categories.length ? (
-            <div className="mt-10 rounded-md border border-dashed border-[#1b1b1b]/15 bg-white p-10 text-center">
-              <h2 className="text-xl font-semibold">Aucune catégorie visible</h2>
-              <p className="mt-3 text-sm leading-7 text-[#1b1b1b]/62">
-                Les catégories activées pour cette page apparaîtront ici.
-              </p>
-            </div>
-          ) : null}
         </div>
       </section>
+      <section className="px-4 py-14 sm:px-8 lg:py-18">
+        <CategoriesBrowser categories={categories} totalVehicles={totalVehicles} />
+      </section>
     </main>
-  );
-}
-
-function CategoryTile({ category }: { category: CategoryCard }) {
-  const Icon = iconMap[category.icon || "car"] ?? Car;
-  const imageUrl = category.image ? getMediaUrl(category.image) : "/showroom-hero.png";
-
-  return (
-    <Link
-      className="group overflow-hidden rounded-md border border-[#1b1b1b]/10 bg-white shadow-sm transition hover:-translate-y-1 hover:shadow-xl hover:shadow-[#1b1b1b]/10"
-      href="/#inventory"
-      id={category.slug}
-      title={category.description || category.name}
-    >
-      <div className="relative h-60 bg-[#f4f4f1]">
-        <Image
-          alt={category.name}
-          className="object-cover transition duration-500 group-hover:scale-105"
-          fill
-          sizes="(max-width: 1280px) 50vw, 33vw"
-          src={imageUrl}
-        />
-        <span className="absolute inset-0 bg-gradient-to-t from-[#1b1b1b]/35 via-transparent to-transparent" />
-        <span className="absolute bottom-5 left-5 inline-flex items-center gap-2 rounded-full bg-white px-5 py-3 text-sm font-semibold text-[#1b1b1b] shadow-lg shadow-[#1b1b1b]/10">
-          <Icon className="h-5 w-5" />
-          {category.name}
-        </span>
-      </div>
-      <div className="p-5">
-        <p className="text-sm leading-7 text-[#1b1b1b]/62">
-          {category.description || "Catégorie disponible dans le showroom."}
-        </p>
-        <p className="mt-4 text-xs font-semibold uppercase text-[#1b1b1b]/45">
-          {category._count.vehicles} véhicule
-          {category._count.vehicles > 1 ? "s" : ""}
-        </p>
-      </div>
-    </Link>
   );
 }

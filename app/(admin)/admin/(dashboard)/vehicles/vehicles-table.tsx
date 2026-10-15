@@ -74,7 +74,7 @@ const statusLabels = {
 const statusStyles = {
   BROUILLON: "border-zinc-600 bg-zinc-800 text-zinc-300",
   DISPONIBLE: "border-emerald-500/30 bg-emerald-500/10 text-emerald-300",
-  VENDU: "border-[#ffc10a]/40 bg-[#ffc10a]/10 text-[#ffc10a]",
+  VENDU: "border-[#a21d2f]/40 bg-[#a21d2f]/10 text-[#a21d2f]",
   RESERVE: "border-orange-500/30 bg-orange-500/10 text-orange-300",
 };
 
@@ -534,7 +534,7 @@ function VehicleActions({
         <DropdownMenuItem>
           <Link
             className="flex w-full items-center gap-2"
-            href={`/vehicles/${vehicle.slug}`}
+            href={`/vehicules/${vehicle.slug}`}
           >
             <Eye className="h-4 w-4" />
             Voir
@@ -562,7 +562,7 @@ function VehicleActions({
           </DropdownMenuItem>
         ) : null}
         <DropdownMenuSeparator />
-        <DropdownMenuItem className="text-[#ffc10a] hover:text-[#ffd24a]">
+        <DropdownMenuItem className="text-[#a21d2f] hover:text-[#a21d2f]">
           <form
             action={deleteVehicleAction}
             className="w-full"

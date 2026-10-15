@@ -8,6 +8,7 @@ import { z } from "zod";
 import { auth } from "@/auth";
 import { saveMediaFile } from "@/lib/media";
 import { getPrisma } from "@/lib/prisma";
+import { MAX_MEDIA_FILE_SIZE_MB, MAX_MEDIA_FILES } from "./constants";
 
 export type MediaActionState = {
   message: string;
@@ -58,8 +59,8 @@ export async function uploadMediaAssets(
       return { ok: false, message: "Selectionnez au moins une image." };
     }
 
-    if (files.length > 20) {
-      return { ok: false, message: "Maximum 20 images par envoi." };
+    if (files.length > MAX_MEDIA_FILES) {
+      return { ok: false, message: `Maximum ${MAX_MEDIA_FILES} images par envoi.` };
     }
 
     const attributes = uploadAttributesSchema.parse({
@@ -73,7 +74,7 @@ export async function uploadMediaAssets(
         alt: attributes.alt,
         caption: attributes.caption,
         directory: "media",
-        maxSizeMb: 10,
+        maxSizeMb: MAX_MEDIA_FILE_SIZE_MB,
         source: "media-library",
         title: attributes.title,
       });

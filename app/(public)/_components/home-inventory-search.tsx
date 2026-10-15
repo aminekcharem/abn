@@ -6,21 +6,28 @@ import { Calendar, Car, Fuel, Gauge, Wrench } from "lucide-react";
 import { useCallback, useMemo, useState } from "react";
 
 import { getMediaUrl } from "@/lib/cdn";
+import {
+  getVehicleStatusBadgeClassName,
+  getVehicleStatusLabel,
+  type PublicVehicleStatus,
+} from "@/lib/public-vehicle-status";
 
 export type HomeInventoryVehicle = {
-  badge: string;
   brandName: string;
   categoryName: string;
   categorySlug: string;
   fuel: string | null;
   id: string;
   image: string | null;
+  imageCount: number;
   isFeatured: boolean;
+  isNew: boolean;
   mileage: number | null;
   model: string | null;
   price: number;
   priceLabel: string;
   slug: string;
+  status: PublicVehicleStatus;
   title: string;
   transmission: string | null;
   year: number | null;
@@ -229,7 +236,7 @@ export function HomeInventorySearch({ vehicles }: HomeInventorySearchProps) {
         </div>
         <div className="mt-4 flex justify-end">
           <button
-            className="rounded-lg border border-[#e3e4e1] px-4 py-2 text-xs font-semibold text-[#5b6470] transition hover:border-[#c98a0b] hover:text-[#c98a0b]"
+            className="rounded-lg border border-[#e3e4e1] px-4 py-2 text-xs font-semibold text-[#5b6470] transition hover:border-[#a21d2f] hover:text-[#a21d2f]"
             onClick={resetFilters}
             type="button"
           >
@@ -241,7 +248,7 @@ export function HomeInventorySearch({ vehicles }: HomeInventorySearchProps) {
       <div className="mb-7 flex flex-wrap items-end justify-between gap-4">
         <h2 className="text-2xl font-semibold uppercase tracking-normal text-[#14181d] sm:text-3xl">
           Nos véhicules
-          <span className="mt-2 block h-0.5 w-14 bg-[#f2a414]" />
+          <span className="mt-2 block h-0.5 w-14 bg-[#a21d2f]" />
         </h2>
         <span className="font-mono text-xs text-[#5b6470]">
           {filteredVehicles.length} résultat(s)
@@ -278,7 +285,7 @@ function SelectField({
         {label}
       </span>
       <select
-        className="w-full rounded-lg border border-[#e3e4e1] bg-white px-3 py-2.5 text-sm text-[#14181d] outline-none transition focus:border-[#f2a414]"
+        className="w-full rounded-lg border border-[#e3e4e1] bg-white px-3 py-2.5 text-sm text-[#14181d] outline-none transition focus:border-[#a21d2f]"
         onChange={(event) => onChange(event.target.value)}
         value={value}
       >
@@ -310,6 +317,8 @@ function RangeFilter({
   const span = Math.max(bounds.max - bounds.min, 1);
   const left = ((value.min - bounds.min) / span) * 100;
   const right = 100 - ((value.max - bounds.min) / span) * 100;
+  const rangeInputClassName =
+    "pointer-events-none absolute top-0 h-7 w-full appearance-none bg-transparent accent-[#14181d] [&::-moz-range-thumb]:pointer-events-auto [&::-webkit-slider-thumb]:pointer-events-auto";
 
   function updateMin(nextValue: number) {
     onChange({ ...value, min: Math.min(nextValue, value.max) });
@@ -337,12 +346,12 @@ function RangeFilter({
       <div className="relative h-7">
         <div className="absolute left-0 right-0 top-3 h-1 rounded-full bg-[#e3e4e1]" />
         <div
-          className="absolute top-3 h-1 rounded-full bg-[#f2a414]"
+          className="absolute top-3 h-1 rounded-full bg-[#a21d2f]"
           style={{ left: `${left}%`, right: `${right}%` }}
         />
         <input
           aria-label={`${label} minimum`}
-          className="absolute top-0 z-20 h-7 w-full appearance-none bg-transparent accent-[#14181d]"
+          className={`${rangeInputClassName} z-20`}
           disabled={disabled}
           max={bounds.max}
           min={bounds.min}
@@ -352,7 +361,7 @@ function RangeFilter({
         />
         <input
           aria-label={`${label} maximum`}
-          className="absolute top-0 z-10 h-7 w-full appearance-none bg-transparent accent-[#14181d]"
+          className={`${rangeInputClassName} z-10`}
           disabled={disabled}
           max={bounds.max}
           min={bounds.min}
@@ -378,7 +387,7 @@ function VehicleGrid({ vehicles }: { vehicles: HomeInventoryVehicle[] }) {
 function VehicleCard({ vehicle }: { vehicle: HomeInventoryVehicle }) {
   return (
     <article className="flex overflow-hidden rounded-[10px] bg-white shadow-[0_6px_24px_rgba(20,24,29,0.08)] transition hover:-translate-y-1">
-      <Link className="flex w-full flex-col" href={`/vehicles/${vehicle.slug}`}>
+      <Link className="flex w-full flex-col" href={`/vehicules/${vehicle.slug}`}>
         <div className="relative aspect-[4/3] overflow-hidden bg-[#1f2630]">
           {vehicle.image ? (
             <Image
@@ -396,8 +405,8 @@ function VehicleCard({ vehicle }: { vehicle: HomeInventoryVehicle }) {
               </small>
             </div>
           )}
-          <span className="absolute left-3 top-3 rounded-md bg-[#1f7a3d] px-3 py-1 text-[11px] font-bold uppercase tracking-[0.08em] text-white">
-            {vehicle.badge}
+          <span className={`absolute left-3 top-3 ${getVehicleStatusBadgeClassName(vehicle.status)}`}>
+            {getVehicleStatusLabel(vehicle.status)}
           </span>
           {vehicle.isFeatured ? (
             <span className="absolute right-3 top-3 rounded-md bg-black/55 px-3 py-1 text-[11px] font-semibold text-white">
@@ -438,7 +447,7 @@ function VehicleCard({ vehicle }: { vehicle: HomeInventoryVehicle }) {
               <span className="text-xl font-semibold">{vehicle.priceLabel}</span>
               <div className="text-[11px] text-[#5b6470]">Hors frais de transport</div>
             </div>
-            <span className="rounded-md bg-[#14181d] px-4 py-2 text-xs font-semibold text-white transition hover:bg-[#f2a414] hover:text-[#14181d]">
+            <span className="rounded-md bg-[#14181d] px-4 py-2 text-xs font-semibold text-white transition hover:bg-[#a21d2f] hover:text-white">
               Voir détails
             </span>
           </div>
@@ -447,3 +456,4 @@ function VehicleCard({ vehicle }: { vehicle: HomeInventoryVehicle }) {
     </article>
   );
 }
+

@@ -12,7 +12,19 @@ import { getPrisma } from "@/lib/prisma";
 
 export const dynamic = "force-dynamic";
 
-async function getBrands() {
+type AdminBrand = {
+  _count: {
+    vehicles: number;
+  };
+  countryOrigin: string | null;
+  id: string;
+  isActive: boolean;
+  logo: string | null;
+  name: string;
+  slug: string;
+};
+
+async function getBrands(): Promise<AdminBrand[]> {
   try {
     const prisma = getPrisma();
 
@@ -105,7 +117,7 @@ export default async function AdminBrandsPage() {
                             type="file"
                           />
                           <button
-                            className="w-max text-xs font-semibold text-[#ffc10a] hover:text-[#ffd24a]"
+                            className="w-max text-xs font-semibold text-[#a21d2f] hover:text-[#a21d2f]"
                             type="submit"
                           >
                             Remplacer
@@ -135,7 +147,7 @@ export default async function AdminBrandsPage() {
                           <Badge
                             className={
                               brand.isActive
-                                ? "border-[#ffc10a]/40 bg-[#ffc10a]/10 text-[#ffc10a]"
+                                ? "border-[#a21d2f]/40 bg-[#a21d2f]/10 text-[#a21d2f]"
                                 : "border-zinc-700 bg-zinc-800 text-zinc-400"
                             }
                             variant="outline"

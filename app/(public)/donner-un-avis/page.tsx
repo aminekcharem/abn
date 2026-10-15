@@ -15,10 +15,10 @@ export default async function GiveReviewPage() {
   ]);
 
   return (
-    <main className="min-h-screen bg-white text-[#1b1b1b]">
+    <main className="min-h-screen bg-[#f7f7f5] text-[#1b1b1b]">
       <PublicHeader brandLinks={brandLinks} settings={settings} />
 
-      <section className="px-4 py-14 sm:px-8">
+      <section className="px-4 py-14 sm:px-8 lg:py-18">
         <div className="mx-auto grid max-w-6xl gap-8 lg:grid-cols-[0.85fr_1.15fr] lg:items-start">
           <div>
             <p className="text-sm font-semibold uppercase text-[#1b1b1b]/45">
@@ -32,13 +32,13 @@ export default async function GiveReviewPage() {
               service. Vous pouvez choisir d&apos;afficher votre nom ou de rester
               anonyme sur le site.
             </p>
-            <div className="mt-7 flex gap-1 text-[#ffc10a]">
+            <div className="mt-7 flex gap-1 text-[#a21d2f]">
               {Array.from({ length: 5 }).map((_, index) => (
                 <Star className="h-5 w-5 fill-current" key={index} />
               ))}
             </div>
             <Link
-              className="mt-8 inline-flex text-sm font-semibold text-[#1b1b1b] underline decoration-[#ffc10a] underline-offset-8"
+              className="mt-8 inline-flex text-sm font-semibold text-[#1b1b1b] underline decoration-[#a21d2f] underline-offset-8"
               href="/"
             >
               Retour à l&apos;accueil

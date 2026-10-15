@@ -52,7 +52,7 @@ export function FloatingContactBar({ settings }: FloatingContactBarProps) {
       {links.map(({ brandIcon, external, href, icon: Icon, label }) => (
         <a
           aria-label={label}
-          className="grid h-11 w-11 place-items-center rounded-full border border-white/15 bg-[#1b1b1b] text-white shadow-xl shadow-black/20 transition hover:bg-[#ffc10a] hover:text-[#1b1b1b]"
+          className="grid h-11 w-11 place-items-center rounded-full border border-white/15 bg-[#1b1b1b] text-white shadow-xl shadow-black/20 transition hover:bg-[#a21d2f] hover:text-white"
           href={href}
           key={label}
           rel={external ? "noreferrer" : undefined}
@@ -68,3 +68,4 @@ export function FloatingContactBar({ settings }: FloatingContactBarProps) {
     </aside>
   );
 }
+

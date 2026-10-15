@@ -1,5 +1,6 @@
 "use client";
 
+import { Languages } from "lucide-react";
 import { useSyncExternalStore } from "react";
 
 import {
@@ -8,6 +9,10 @@ import {
 } from "./public-translation-provider";
 
 type SiteLanguage = "fr" | "en";
+
+type PublicLanguageSwitchProps = {
+  variant?: "dark" | "light";
+};
 
 function getStoredLanguage(): SiteLanguage {
   if (typeof window === "undefined") return "fr";
@@ -25,7 +30,7 @@ function subscribeToLanguage(callback: () => void) {
   };
 }
 
-export function PublicLanguageSwitch() {
+export function PublicLanguageSwitch({ variant = "dark" }: PublicLanguageSwitchProps) {
   const language = useSyncExternalStore(
     subscribeToLanguage,
     getStoredLanguage,
@@ -41,14 +46,23 @@ export function PublicLanguageSwitch() {
     );
   }
 
+  const isLight = variant === "light";
+  const frameClassName = isLight
+    ? "border-[#ededed] bg-[#f7f7f5] text-[#24272c] shadow-[inset_0_0_0_1px_rgba(255,255,255,0.7)]"
+    : "border-white/20 bg-white/8 text-white";
+  const inactiveClassName = isLight
+    ? "text-[#696665] hover:bg-white hover:text-[#a21d2f]"
+    : "text-white/65 hover:bg-white/10 hover:text-white";
+
   return (
-    <div className="overflow-hidden rounded-md border border-white/25">
+    <div className={`inline-flex h-11 items-center gap-1 rounded-full border p-1 ${frameClassName}`}>
+      <Languages className={`ml-2 h-4 w-4 shrink-0 ${isLight ? "text-[#a21d2f]" : "text-white/72"}`} />
       <button
         aria-pressed={language === "fr"}
-        className={`px-3 py-1.5 text-xs font-semibold transition ${
+        className={`h-8 min-w-9 rounded-full px-3 text-xs font-bold transition ${
           language === "fr"
-            ? "bg-[#f2a414] text-[#14181d]"
-            : "text-white/65 hover:bg-white/10 hover:text-white"
+            ? "bg-[#a21d2f] text-white shadow-[0_6px_14px_rgba(162,29,47,0.24)]"
+            : inactiveClassName
         }`}
         onClick={() => changeLanguage("fr")}
         type="button"
@@ -57,10 +71,10 @@ export function PublicLanguageSwitch() {
       </button>
       <button
         aria-pressed={language === "en"}
-        className={`px-3 py-1.5 text-xs font-semibold transition ${
+        className={`h-8 min-w-9 rounded-full px-3 text-xs font-bold transition ${
           language === "en"
-            ? "bg-[#f2a414] text-[#14181d]"
-            : "text-white/65 hover:bg-white/10 hover:text-white"
+            ? "bg-[#a21d2f] text-white shadow-[0_6px_14px_rgba(162,29,47,0.24)]"
+            : inactiveClassName
         }`}
         onClick={() => changeLanguage("en")}
         type="button"
@@ -70,3 +84,4 @@ export function PublicLanguageSwitch() {
     </div>
   );
 }
+

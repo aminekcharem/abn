@@ -36,13 +36,6 @@ export const vehicleSchema = z
     motorization: optionalText(),
     price: z.coerce.number().positive("Le prix doit etre superieur a 0."),
     priceCurrency: z.enum(["TND", "EUR"]),
-    transportIncluded: z.coerce.boolean(),
-    transportPrice: optionalNumber(
-      z
-        .number()
-        .positive("Le prix de transport doit etre superieur a 0."),
-    ),
-    transportCurrency: z.enum(["TND", "EUR"]),
     year: optionalNumber(
       z
         .number()
@@ -80,17 +73,6 @@ export const vehicleSchema = z
     optionIds: z.array(z.string()).default([]),
     existingImages: z.array(z.string()).default([]),
     existingVideos: z.array(z.string()).default([]),
-    existingInspectionReportUrl: optionalText(500),
-  })
-  .superRefine((data, context) => {
-    if (!data.transportIncluded && data.transportPrice === undefined) {
-      context.addIssue({
-        code: "custom",
-        message:
-          "Le prix de transport est obligatoire si le transport jusqu'a port Rades n'est pas inclus.",
-        path: ["transportPrice"],
-      });
-    }
   });
 
 export type VehicleFormInput = z.infer<typeof vehicleSchema>;

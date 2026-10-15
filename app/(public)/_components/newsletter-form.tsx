@@ -45,7 +45,7 @@ export function NewsletterForm() {
           type="email"
         />
         <button
-          className="rounded-full bg-[#ffc10a] px-5 py-2 text-sm font-semibold text-[#1b1b1b] transition hover:bg-white hover:ring-2 hover:ring-[#ffc10a] disabled:cursor-wait disabled:opacity-70"
+          className="rounded-full bg-[#a21d2f] px-5 py-2 text-sm font-semibold text-white transition hover:bg-[#111111] disabled:cursor-wait disabled:opacity-70"
           disabled={isPending}
           type="submit"
         >
@@ -57,7 +57,7 @@ export function NewsletterForm() {
           aria-live="polite"
           className={
             isSuccess
-              ? "flex items-start gap-2 rounded-md border border-[#ffc10a]/35 bg-[#ffc10a]/12 px-4 py-3 text-sm font-medium text-[#fff4c2] shadow-lg shadow-black/10"
+              ? "flex items-start gap-2 rounded-md border border-[#a21d2f]/35 bg-[#a21d2f]/12 px-4 py-3 text-sm font-medium text-[#fff4c2] shadow-lg shadow-black/10"
               : "flex items-start gap-2 rounded-md border border-red-300/35 bg-red-500/12 px-4 py-3 text-sm font-medium text-red-100 shadow-lg shadow-black/10"
           }
           role="status"

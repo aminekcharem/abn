@@ -59,7 +59,7 @@ export default async function AdminReviewsPage() {
           </p>
         </div>
         <div className="flex flex-wrap gap-2">
-          <Badge className="border-[#ffc10a]/40 bg-[#ffc10a]/10 text-[#ffc10a]" variant="outline">
+          <Badge className="border-[#a21d2f]/40 bg-[#a21d2f]/10 text-[#a21d2f]" variant="outline">
             {publishedCount} publie
           </Badge>
           <Badge className="border-zinc-700 bg-zinc-800 text-zinc-300" variant="outline">
@@ -82,7 +82,7 @@ export default async function AdminReviewsPage() {
                 <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_460px]">
                   <div>
                     <div className="flex items-start gap-3">
-                      <span className="grid h-11 w-11 shrink-0 place-items-center rounded-md border border-[#ffc10a]/30 bg-[#ffc10a]/10 text-[#ffc10a]">
+                      <span className="grid h-11 w-11 shrink-0 place-items-center rounded-md border border-[#a21d2f]/30 bg-[#a21d2f]/10 text-[#a21d2f]">
                         <MessageSquareText className="h-5 w-5" />
                       </span>
                       <div className="min-w-0">
@@ -93,7 +93,7 @@ export default async function AdminReviewsPage() {
                           <Badge
                             className={
                               review.isPublished
-                                ? "border-[#ffc10a]/40 bg-[#ffc10a]/10 text-[#ffc10a]"
+                                ? "border-[#a21d2f]/40 bg-[#a21d2f]/10 text-[#a21d2f]"
                                 : "border-zinc-700 bg-zinc-800 text-zinc-400"
                             }
                             variant="outline"
@@ -108,7 +108,7 @@ export default async function AdminReviewsPage() {
                         </div>
                         <div className="mt-2 flex flex-wrap items-center gap-3 text-xs text-zinc-500">
                           <span>{formatDate(review.createdAt)}</span>
-                          <span className="flex items-center gap-1 text-[#ffc10a]">
+                          <span className="flex items-center gap-1 text-[#a21d2f]">
                             {Array.from({ length: 5 }).map((_, index) => (
                               <Star
                                 className={
@@ -223,7 +223,7 @@ export default async function AdminReviewsPage() {
                       </label>
                     </div>
                     <Button
-                      className="w-max bg-[#ffc10a] text-[#050b20] hover:bg-[#050b20] hover:text-white"
+                      className="w-max bg-[#a21d2f] text-white hover:bg-[#050b20] hover:text-white"
                       type="submit"
                     >
                       Enregistrer
@@ -249,3 +249,4 @@ const inputClass =
   "h-10 rounded-md border border-zinc-800 bg-zinc-950 px-3 text-sm text-zinc-100 outline-none ring-primary/30 transition focus:ring-4";
 
 const labelClass = "grid gap-2 text-sm font-medium text-zinc-200";
+

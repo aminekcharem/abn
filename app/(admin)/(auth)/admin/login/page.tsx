@@ -29,7 +29,7 @@ export default async function AdminLoginPage({
               src={authLogoUrl}
             />
           ) : (
-            <span className="mb-3 grid h-12 w-12 place-items-center rounded-md bg-[#ffc10a] text-sm font-semibold text-[#050b20]">
+            <span className="mb-3 grid h-12 w-12 place-items-center rounded-md bg-[#a21d2f] text-sm font-semibold text-white">
               {settings.companyName.slice(0, 2).toUpperCase()}
             </span>
           )}

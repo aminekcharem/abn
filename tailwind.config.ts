@@ -12,7 +12,7 @@ const config: Config = {
         automotive: {
           black: "#050505",
           anthracite: "#18181B",
-          red: "#ffc10a",
+          red: "#a21d2f",
         },
       },
     },

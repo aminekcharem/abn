@@ -68,10 +68,9 @@ cp -R public .next/standalone/public
 
 echo "==> Starting or reloading PM2 app: $APP_NAME"
 if pm2 describe "$APP_NAME" >/dev/null 2>&1; then
-  env PORT="$PORT" HOSTNAME="$APP_HOST" pm2 reload "$APP_NAME" --update-env
-else
-  env PORT="$PORT" HOSTNAME="$APP_HOST" pm2 start "$SERVER_PATH" --name "$APP_NAME"
+  pm2 delete "$APP_NAME"
 fi
+env PORT="$PORT" HOSTNAME="$APP_HOST" pm2 start "$ROOT_DIR/scripts/start-standalone.mjs" --name "$APP_NAME"
 
 pm2 save
 

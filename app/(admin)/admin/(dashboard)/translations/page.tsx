@@ -57,7 +57,7 @@ export default async function AdminTranslationsPage() {
         </div>
         <form action={syncDetectedTranslationsAction}>
           <Button
-            className="bg-[#ffc10a] text-[#050b20] hover:bg-[#050b20] hover:text-white"
+            className="bg-[#a21d2f] text-white hover:bg-[#050b20] hover:text-white"
             type="submit"
           >
             Synchroniser les textes detectes
@@ -100,7 +100,7 @@ export default async function AdminTranslationsPage() {
                 Active
               </label>
               <Button
-                className="bg-[#ffc10a] text-[#050b20] hover:bg-[#050b20] hover:text-white"
+                className="bg-[#a21d2f] text-white hover:bg-[#050b20] hover:text-white"
                 type="submit"
               >
                 Ajouter
@@ -161,7 +161,7 @@ export default async function AdminTranslationsPage() {
                     Active
                   </label>
                   <Button
-                    className="bg-[#ffc10a] text-[#050b20] hover:bg-[#050b20] hover:text-white"
+                    className="bg-[#a21d2f] text-white hover:bg-[#050b20] hover:text-white"
                     type="submit"
                   >
                     Modifier
@@ -187,3 +187,4 @@ const textareaClass =
   "min-h-20 rounded-md border border-zinc-800 bg-zinc-950 px-3 py-2 text-sm text-zinc-100 outline-none ring-primary/30 transition focus:ring-4";
 
 const labelClass = "grid gap-2 text-sm font-medium text-zinc-200";
+

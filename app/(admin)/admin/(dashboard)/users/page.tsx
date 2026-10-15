@@ -64,7 +64,7 @@ export default async function AdminUsersPage() {
                 key={user.id}
               >
                 <div className="flex min-w-0 items-start gap-3">
-                  <span className="grid h-11 w-11 shrink-0 place-items-center rounded-md border border-[#ffc10a]/30 bg-[#ffc10a]/10 text-[#ffc10a]">
+                  <span className="grid h-11 w-11 shrink-0 place-items-center rounded-md border border-[#a21d2f]/30 bg-[#a21d2f]/10 text-[#a21d2f]">
                     {user.role === "SUPER_ADMIN" ? (
                       <ShieldCheck className="h-5 w-5" />
                     ) : (
@@ -77,7 +77,7 @@ export default async function AdminUsersPage() {
                         {user.name}
                       </h3>
                       <Badge
-                        className="border-[#ffc10a]/40 bg-[#ffc10a]/10 text-[#ffc10a]"
+                        className="border-[#a21d2f]/40 bg-[#a21d2f]/10 text-[#a21d2f]"
                         variant="outline"
                       >
                         {user.role === "SUPER_ADMIN"

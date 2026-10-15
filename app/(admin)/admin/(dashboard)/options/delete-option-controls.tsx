@@ -26,7 +26,7 @@ export function DeleteOptionButton({
     >
       <input name="id" type="hidden" value={optionId} />
       <button
-        className="grid h-5 w-5 place-items-center rounded-full text-zinc-500 transition hover:bg-[#ffc10a] hover:text-[#050b20]"
+        className="grid h-5 w-5 place-items-center rounded-full text-zinc-500 transition hover:bg-[#a21d2f] hover:text-white"
         title="Supprimer l'option"
         type="submit"
       >
@@ -66,7 +66,7 @@ export function DeleteOptionCategoryButton({
     >
       <input name="id" type="hidden" value={categoryId} />
       <Button
-        className="border-[#ffc10a]/40 bg-[#ffc10a] text-[#050b20] hover:bg-[#050b20] hover:text-white"
+        className="border-[#a21d2f]/40 bg-[#a21d2f] text-white hover:bg-[#050b20] hover:text-white"
         size="sm"
         type="submit"
         variant="outline"
@@ -77,3 +77,4 @@ export function DeleteOptionCategoryButton({
     </form>
   );
 }
+
